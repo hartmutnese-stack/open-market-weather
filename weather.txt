@@ -1,7 +1,7 @@
 
 ======================================================================
  OPEN MARKET WEATHER OBSERVATORY // UNBIASED MACRO FRICTION
- 2026-11-06 16:58 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA
+ 2026-11-06 17:16 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA
 ======================================================================
 
  OVERALL STATUS : SCATTERED CLOUDS [Score: 34/100]
@@ -14,11 +14,11 @@
  [*] COLLATERAL     : STABLE -> No central bank emergency swap usage. US Dollar conduits clear.
 
  --- 5 OPERATIONAL PILLARS ---
- [1] Market Options Vola    : Score 39/100 (VIX: 23.84 | MOVE: 92.65)
+ [1] Market Options Vola    : Score 39/100 (VIX: 23.94 | MOVE: 92.64)
  [2] Dark Pool Short Ratio  : Score 70/100 (SPY Short: 56.0% | Date: 20261105)
  [3] Global Dollar Plumbing : Score 10/100 (TGA: $850.0B [5D: 0.0B] | Swaps: $0.0B)
  [4] Statutory Credit Risk  : Score 52/100 (SEC 8-K Accelerations: 13)
  [5] Cognitive & Logistics  : Score 2/100 (Analyst Z: +0.1σ | Border: 20m)
 
- API: curl -sL https://marketweather.pages.dev/weather.json
+ API: curl -sL https://open-market-weather.hartmut-nese.workers.dev/weather.json
 ======================================================================

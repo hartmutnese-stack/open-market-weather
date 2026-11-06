@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>Market Weather // Macro Observatory</title>
+    <title>⛅ Market Weather (34/100)</title>
     <meta name="description" content="Decentralized systemic risk barometer tracking FINRA dark pools, interbank liquidity, and options market stress.">
+    <!-- URL-ENCODED EMOJI FAVICON FÜR BRAVE & CHROME -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='.9em'%20font-size='90'%3E⛅%3C/text%3E%3C/svg%3E">
     <style>
         * { box-sizing: border-box; }
         body {
@@ -92,6 +94,7 @@
         a:hover { text-decoration: underline; }
         .footer { margin-top: 2.5rem; border-top: 1px dashed #2d3748; padding-top: 1rem; font-size: 0.8rem; color: #718096; }
         .score-pill { font-weight: bold; padding: 2px 8px; border-radius: 3px; background: #1a202c; white-space: nowrap; }
+        code { background: #1a202c; padding: 2px 6px; border-radius: 3px; color: #e2e8f0; }
 
         @media (max-width: 640px) {
             body { padding: 1rem 0.75rem; }
@@ -114,7 +117,7 @@
 <body>
     <div class="header">
         <strong>OPEN MARKET WEATHER OBSERVATORY // MACRO MATRIX</strong><br>
-        <span class="badge-sub">TIMESTAMP: 2026-11-06 16:58 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA</span>
+        <span class="badge-sub">TIMESTAMP: 2026-11-06 17:16 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA</span>
         <div class="header-links">
             <a href="weather.json">[Raw JSON API]</a> &nbsp;|&nbsp; 
             <a href="weather.txt">[Plaintext for cURL]</a> &nbsp;|&nbsp; 
@@ -167,7 +170,7 @@
                 <tr>
                     <td><strong>1. Market Derivatives</strong></td>
                     <td>S&P 500 VIX + Treasury MOVE Index</td>
-                    <td>VIX: 23.84 | MOVE: 92.65</td>
+                    <td>VIX: 23.94 | MOVE: 92.64</td>
                     <td><span class="score-pill">39/100</span></td>
                 </tr>
                 <tr>
@@ -200,8 +203,8 @@
 
     <div class="footer">
         Decentralized public utility. Built on FINRA off-exchange flows, physics, central bank balance sheets, and statutory disclosures.<br>
-        CLI Access: <code>curl -sL [YOUR-URL]/weather.txt</code><br>
-        Bot Embed: <code>&lt;img src="[YOUR-URL]/badge.svg"&gt;</code>
+        CLI Access: <code>curl -sL https://open-market-weather.hartmut-nese.workers.dev/weather.txt</code><br>
+        Bot Embed: <code>&lt;img src="https://open-market-weather.hartmut-nese.workers.dev/badge.svg"&gt;</code>
     </div>
 </body>
 </html>
