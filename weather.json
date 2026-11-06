@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-06 17:16 UTC",
+  "timestamp": "2026-11-06 17:22 UTC",
   "symbol": "\u26c5",
   "composite_score": 34,
   "status": "SCATTERED CLOUDS",
@@ -29,9 +29,9 @@
   },
   "pillars": {
     "market_implied": {
-      "score": 39,
-      "vix": 23.94,
-      "move_index": 92.64
+      "score": 40,
+      "vix": 24.24,
+      "move_index": 92.62
     },
     "dark_pool_finra": {
       "score": 70,
