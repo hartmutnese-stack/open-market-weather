@@ -1,18 +1,24 @@
 
 ======================================================================
- OPEN MARKET WEATHER OBSERVATORY // MULTI-VECTOR FRICTION MATRIX
- 2026-11-06 16:30 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA
+ OPEN MARKET WEATHER OBSERVATORY // UNBIASED MACRO FRICTION
+ 2026-11-06 16:46 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA
 ======================================================================
 
- OVERALL STATUS : ⛅ SCATTERED CLOUDS [Score: 35/100]
+ OVERALL STATUS : SCATTERED CLOUDS [Score: 27/100]
  CURRENT REGIME : Background operational noise within historical boundaries. No immediate systemic fracture.
 
- --- 5 OPERATIONAL PILLARS ---
- [1] Market Options Vola    : Score 41/100 (VIX: 24.77 | MOVE: 92.67)
- [2] Global Dollar Plumbing : Score 14/100 (TGA: $750.0B | Swaps: $0.0B)
- [3] Statutory Credit Risk  : Score 100/100 (SEC Form 8-K Item 2.04 Filings: 10000)
- [4] Logistics & Sovereign  : Score 8/100 (Laredo Border Delay: 25m | Debt B2C: 2.5x)
- [5] Cognitive / Air Kinetic: Score 5/100 (Analyst Z: +0.1σ | BIS Air Corridor: 49)
+ --- TACTICAL POSTURE (OPERATIONAL DIRECTIVES) ---
+ [*] GRID BOTS      : CAUTION -> Widen grid bands by 15-25%. Reduce leverage.
+ [*] DIP BUYING     : FAVORABLE -> Pullbacks reflect standard liquidity absorption. Support lines holding.
+ [*] DARK POOL FLOW : NOMINAL -> Balanced flow (48.5% off-exchange short ratio on SPY).
+ [*] COLLATERAL     : STABLE -> No central bank emergency swap usage. US Dollar conduits clear.
 
- API Endpoint: curl -sL https://marketweather.pages.dev/weather.json
+ --- 5 OPERATIONAL PILLARS ---
+ [1] Market Options Vola    : Score 40/100 (VIX: 24.01 | MOVE: 92.65)
+ [2] Dark Pool Short Ratio  : Score 30/100 (SPY Off-Exchange Short: 48.5%)
+ [3] Global Dollar Plumbing : Score 14/100 (TGA: $750.0B | Swaps: $0.0B)
+ [4] Statutory Credit Risk  : Score 52/100 (SEC 8-K Accelerations: 13)
+ [5] Cognitive & Logistics  : Score 3/100 (Analyst Z: +0.1σ | Border: 25m)
+
+ API: curl -sL https://marketweather.pages.dev/weather.json
 ======================================================================

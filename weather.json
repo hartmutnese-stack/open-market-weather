@@ -1,15 +1,42 @@
 {
-  "timestamp": "2026-11-06 16:36 UTC",
+  "timestamp": "2026-11-06 16:46 UTC",
   "symbol": "\u26c5",
-  "composite_score": 26,
+  "composite_score": 27,
   "status": "SCATTERED CLOUDS",
   "desc": "Background operational noise within historical boundaries. No immediate systemic fracture.",
   "color": "#ffcc00",
+  "tactical_posture": {
+    "grid_bots": {
+      "status": "CAUTION",
+      "color": "#ffcc00",
+      "action": "Widen grid bands by 15-25%. Reduce leverage."
+    },
+    "dip_buying": {
+      "status": "FAVORABLE",
+      "color": "#00ff66",
+      "action": "Pullbacks reflect standard liquidity absorption. Support lines holding."
+    },
+    "dark_pool": {
+      "status": "NOMINAL",
+      "color": "#00ff66",
+      "action": "Balanced flow (48.5% off-exchange short ratio on SPY)."
+    },
+    "collateral": {
+      "status": "STABLE",
+      "color": "#00ff66",
+      "action": "No central bank emergency swap usage. US Dollar conduits clear."
+    }
+  },
   "pillars": {
     "market_implied": {
-      "score": 41,
-      "vix": 24.84,
+      "score": 40,
+      "vix": 24.01,
       "move_index": 92.65
+    },
+    "dark_pool_finra": {
+      "score": 30,
+      "spy_short_volume_ratio": 48.5,
+      "report_date": "Latest"
     },
     "liquidity_plumbing": {
       "score": 14,
@@ -17,19 +44,14 @@
       "tga_5d_flow": 0.0,
       "swaps_billions": 0.0
     },
-    "credit_and_statutory": {
+    "credit_statutory": {
       "score": 52,
       "sec_8k_filings": 13
     },
-    "physical_logistics": {
-      "score": 8,
-      "border_wait": 25,
-      "b2c_ratio": 2.5
-    },
-    "cognitive_and_kinetic": {
-      "score": 5,
+    "cognitive_physical": {
+      "score": 3,
       "wiki_z": 0.1,
-      "flights": 38
+      "border_wait_m": 25
     }
   }
 }

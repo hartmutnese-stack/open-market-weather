@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market Weather // Macro Observatory</title>
+    <meta name="description" content="Decentralized systemic risk barometer tracking FINRA dark pools, interbank liquidity, and options market stress.">
     <style>
         body {
             background: #090b0e;
@@ -20,11 +21,11 @@
             border: 2px solid #ffcc00;
             background: #111419;
             padding: 2rem 1.5rem;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
             text-align: center;
         }
         .status-symbol {
-            font-size: 4rem;
+            font-size: 4.2rem;
             line-height: 1;
             margin-bottom: 0.8rem;
             display: block;
@@ -42,6 +43,32 @@
             max-width: 650px;
             margin: auto;
         }
+        .posture-card {
+            border: 1px solid #2d3748;
+            background: #0d1117;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .posture-title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #e2e8f0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px dashed #2d3748;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .posture-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 0.4rem 0;
+            font-size: 0.95rem;
+        }
+        .posture-label { font-weight: bold; color: #a0aec0; width: 140px; }
+        .posture-status { font-weight: bold; width: 110px; }
+        .posture-action { color: #cbd5e0; flex: 1; text-align: right; font-size: 0.9rem; }
         .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         .table td, .table th { padding: 0.75rem 0.6rem; text-align: left; border-bottom: 1px solid #1a202c; }
         .table th { color: #718096; font-size: 0.85rem; text-transform: uppercase; }
@@ -53,8 +80,8 @@
 </head>
 <body>
     <div class="header">
-        <strong>OPEN MARKET WEATHER OBSERVATORY // MULTI-VECTOR MATRIX</strong><br>
-        <span class="badge-sub">TIMESTAMP: 2026-11-06 16:36 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA</span><br><br>
+        <strong>OPEN MARKET WEATHER OBSERVATORY // MACRO MATRIX</strong><br>
+        <span class="badge-sub">TIMESTAMP: 2026-11-06 16:46 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA</span><br><br>
         <a href="weather.json">[Raw JSON API]</a> &nbsp;|&nbsp; 
         <a href="weather.txt">[Plaintext for cURL]</a> &nbsp;|&nbsp; 
         <a href="badge.svg">[Live SVG Badge]</a>
@@ -62,8 +89,32 @@
 
     <div class="status-box">
         <span class="status-symbol">⛅</span>
-        <div class="status-title">SCATTERED CLOUDS (SCORE: 26/100)</div>
+        <div class="status-title">SCATTERED CLOUDS (SCORE: 27/100)</div>
         <div class="status-desc">Background operational noise within historical boundaries. No immediate systemic fracture.</div>
+    </div>
+
+    <div class="posture-card">
+        <div class="posture-title">🎯 Tactical Posture // Operational Directives</div>
+        <div class="posture-item">
+            <span class="posture-label">GRID BOTS</span>
+            <span class="posture-status" style="color: #ffcc00">CAUTION</span>
+            <span class="posture-action">Widen grid bands by 15-25%. Reduce leverage.</span>
+        </div>
+        <div class="posture-item">
+            <span class="posture-label">DIP BUYING</span>
+            <span class="posture-status" style="color: #00ff66">FAVORABLE</span>
+            <span class="posture-action">Pullbacks reflect standard liquidity absorption. Support lines holding.</span>
+        </div>
+        <div class="posture-item">
+            <span class="posture-label">DARK POOL</span>
+            <span class="posture-status" style="color: #00ff66">NOMINAL</span>
+            <span class="posture-action">Balanced flow (48.5% off-exchange short ratio on SPY).</span>
+        </div>
+        <div class="posture-item">
+            <span class="posture-label">COLLATERAL</span>
+            <span class="posture-status" style="color: #00ff66">STABLE</span>
+            <span class="posture-action">No central bank emergency swap usage. US Dollar conduits clear.</span>
+        </div>
     </div>
 
     <h3>THE 5 OPERATIONAL PILLARS</h3>
@@ -80,38 +131,38 @@
             <tr>
                 <td><strong>1. Market Derivatives</strong></td>
                 <td>S&P 500 VIX + Treasury MOVE Index</td>
-                <td>VIX: 24.84 | MOVE: 92.65</td>
-                <td><span class="score-pill">41/100</span></td>
+                <td>VIX: 24.01 | MOVE: 92.65</td>
+                <td><span class="score-pill">40/100</span></td>
             </tr>
             <tr>
-                <td><strong>2. Dollar Plumbing</strong></td>
+                <td><strong>2. Dark Pool Flow</strong></td>
+                <td>FINRA Reg SHO Daily Short Volume (SPY)</td>
+                <td>Short Ratio: 48.5% (NMS)</td>
+                <td><span class="score-pill">30/100</span></td>
+            </tr>
+            <tr>
+                <td><strong>3. Dollar Plumbing</strong></td>
                 <td>U.S. TGA Cash + NY Fed Central Bank Swaps</td>
                 <td>TGA: $750.0B | Swaps: $0.0B</td>
                 <td><span class="score-pill">14/100</span></td>
             </tr>
             <tr>
-                <td><strong>3. Statutory Credit Risk</strong></td>
+                <td><strong>4. Statutory Credit Risk</strong></td>
                 <td>SEC 8-K Form (Item 2.04 Acceleration - 14D)</td>
                 <td>Active Filings: 13</td>
                 <td><span class="score-pill">52/100</span></td>
             </tr>
             <tr>
-                <td><strong>4. Physical & Sovereign</strong></td>
-                <td>CBP Freight Border Delay (Laredo) + Auction B2C</td>
-                <td>Wait: 25m | Debt Demand: 2.5x</td>
-                <td><span class="score-pill">8/100</span></td>
-            </tr>
-            <tr>
-                <td><strong>5. Cognitive & Kinetic</strong></td>
-                <td>Wikimedia Desk Traffic + BIS Basel Air Corridor</td>
-                <td>Analyst Z: +0.1σ | Flights: 38</td>
-                <td><span class="score-pill">5/100</span></td>
+                <td><strong>5. Cognitive & Logistics</strong></td>
+                <td>Wikimedia Desk Traffic + CBP Laredo Freight</td>
+                <td>Analyst Z: +0.1σ | Border: 25m</td>
+                <td><span class="score-pill">3/100</span></td>
             </tr>
         </tbody>
     </table>
 
     <div class="footer">
-        Decentralized public utility. Built on physics, central bank balance sheets, statutory disclosures, and physical freight queues.<br>
+        Decentralized public utility. Built on FINRA off-exchange flows, physics, central bank balance sheets, and statutory disclosures.<br>
         CLI Access: <code>curl -sL [YOUR-URL]/weather.txt</code><br>
         Bot Embed: <code>&lt;img src="[YOUR-URL]/badge.svg"&gt;</code>
     </div>
