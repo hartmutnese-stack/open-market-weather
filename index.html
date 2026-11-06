@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marktwetter // Unabhängiges Volatilitäts-Observatorium</title>
+    <meta name="description" content="Ein offenes Barometer für systemische Marktvolatilität basierend auf unmanipulierbaren Rohdaten.">
+    <!-- JSON-LD für Suchmaschinen / Schema.org -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SpecialAnnouncement",
+      "name": "Open Market Weather Forecast",
+      "datePosted": "2026-11-06 15:55 UTC",
+      "text": "☀️ RUHIGER HIMMEL - Score: 14/100"
+    }
+    </script>
+    <style>
+        body {
+            background: #0d0f12;
+            color: #d1d5db;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 2rem;
+            max-width: 800px;
+            margin: auto;
+            line-height: 1.5;
+        }
+        .header { border-bottom: 1px dashed #374151; padding-bottom: 1rem; margin-bottom: 2rem; }
+        .badge { color: #9ca3af; font-size: 0.85rem; }
+        .status-box {
+            border: 2px solid #00ff66;
+            background: #161b22;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .status-title { font-size: 1.6rem; color: #00ff66; margin: 0 0 0.5rem 0; font-weight: bold; }
+        .table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
+        .table td, .table th { padding: 0.6rem; text-align: left; border-bottom: 1px solid #1f2937; }
+        .table th { color: #9ca3af; }
+        a { color: #60a5fa; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .footer { margin-top: 3rem; border-top: 1px dashed #374151; padding-top: 1rem; font-size: 0.85rem; color: #6b7280; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <strong>OPEN MARKET WEATHER OBSERVATORY</strong><br>
+        <span class="badge">STAND: 2026-11-06 15:55 UTC // E2.MICRO ENGINE // ZERO COMMERCIAL BIAS</span><br>
+        <a href="weather.json">[Raw JSON API]</a> | <a href="weather.txt">[Plaintext for cURL]</a>
+    </div>
+
+    <div class="status-box">
+        <div class="status-title">☀️ RUHIGER HIMMEL (14/100)</div>
+        <p>Systemische Friktion minimal. Normale Marktphasen, Liquidität stabil.</p>
+    </div>
+
+    <h3>SYSTEMISCHE VEKTOREN (ROHDATEN)</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Vektor</th>
+                <th>Messwert</th>
+                <th>Zustand</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Analysten-Recherche</strong><br><small>Wikimedia Desktop Traffic</small></td>
+                <td>Z-Score: +0.27σ</td>
+                <td>Score: 6/100</td>
+            </tr>
+            <tr>
+                <td><strong>US-Girokonto (TGA)</strong><br><small>Treasury Operating Balance</small></td>
+                <td>$0.0 Mrd. (5T: 0.0 Mrd.)</td>
+                <td>Score: 20/100</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Freies Web-Projekt. Keine Anlageberatung. Basiert auf öffentlichen Behörden- und Physikschnittstellen.<br>
+        Terminal: <code>curl https://marktwetter.org/weather.txt</code>
+    </div>
+</body>
+</html>

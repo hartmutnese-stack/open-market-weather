@@ -1,0 +1,15 @@
+
+======================================================================
+ OPEN MARKET WEATHER OBSERVATORY // RAW SYSTEMIC FRICTION
+ 2026-11-06 15:55 UTC // HOSTED ON FREE-TIER COMPUTE // NO ADS
+======================================================================
+
+ STATUS: ☀️ RUHIGER HIMMEL [Score: 14/100]
+ DETAIL: Systemische Friktion minimal. Normale Marktphasen, Liquidität stabil.
+
+ --- SEISMISCHE VEKTOREN ---
+ [Kognitiv]  Analysten-Recherche Spike:  Z-Score: +0.27σ (Score: 6/100)
+ [Liquidity] US Treasury Cash Balance:   $0.0 Mrd. (5T-Delta: 0.0 Mrd.)
+
+ API: curl https://marktwetter.org/weather.json
+======================================================================
