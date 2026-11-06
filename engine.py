@@ -62,7 +62,7 @@ def get_treasury_score():
         for row in data["data"]:
             acc = row.get("account_type", "")
             if "Federal Reserve Account" in acc or "Treasury General Account" in acc:
-                val = row.get("close_today_bal")
+                val = row.get("close_today_bal") if val in (None, "null", "", "None"):     val = row.get("open_today_bal")
                 if val is not None:
                     try:
                         tga_rows.append(float(val))
