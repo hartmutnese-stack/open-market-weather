@@ -2,94 +2,129 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Market Weather // Macro Observatory</title>
     <meta name="description" content="Decentralized systemic risk barometer tracking FINRA dark pools, interbank liquidity, and options market stress.">
     <style>
+        * { box-sizing: border-box; }
         body {
             background: #090b0e;
             color: #d1d5db;
             font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
-            padding: 2rem;
+            padding: 1.5rem 1rem;
             max-width: 900px;
             margin: auto;
             line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
-        .header { border-bottom: 1px dashed #2d3748; padding-bottom: 1rem; margin-bottom: 2rem; }
-        .badge-sub { color: #718096; font-size: 0.85rem; }
+        .header { border-bottom: 1px dashed #2d3748; padding-bottom: 1rem; margin-bottom: 1.5rem; }
+        .header-links { margin-top: 0.8rem; font-size: 0.9rem; word-break: break-all; }
+        .badge-sub { color: #718096; font-size: 0.8rem; }
         .status-box {
             border: 2px solid #ffcc00;
             background: #111419;
-            padding: 2rem 1.5rem;
+            padding: 1.5rem 1rem;
             margin-bottom: 2rem;
             text-align: center;
+            border-radius: 4px;
         }
         .status-symbol {
-            font-size: 4.2rem;
+            font-size: 3.8rem;
             line-height: 1;
-            margin-bottom: 0.8rem;
+            margin-bottom: 0.6rem;
             display: block;
         }
         .status-title {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             color: #ffcc00;
-            margin: 0 0 0.6rem 0;
+            margin: 0 0 0.5rem 0;
             font-weight: bold;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
         .status-desc {
             color: #9ca3af;
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             max-width: 650px;
             margin: auto;
         }
         .posture-card {
             border: 1px solid #2d3748;
             background: #0d1117;
-            padding: 1.25rem 1.5rem;
-            margin-bottom: 2.5rem;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+            border-radius: 4px;
         }
         .posture-title {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: bold;
             color: #e2e8f0;
             text-transform: uppercase;
             letter-spacing: 1px;
             border-bottom: 1px dashed #2d3748;
             padding-bottom: 0.5rem;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
         .posture-item {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
-            padding: 0.4rem 0;
-            font-size: 0.95rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #161b22;
+            font-size: 0.9rem;
         }
-        .posture-label { font-weight: bold; color: #a0aec0; width: 140px; }
-        .posture-status { font-weight: bold; width: 110px; }
-        .posture-action { color: #cbd5e0; flex: 1; text-align: right; font-size: 0.9rem; }
-        .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .posture-item:last-child { border-bottom: none; }
+        .posture-label { font-weight: bold; color: #a0aec0; width: 130px; flex-shrink: 0; }
+        .posture-status { font-weight: bold; width: 110px; flex-shrink: 0; }
+        .posture-action { color: #cbd5e0; flex: 1; text-align: right; }
+        
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 1rem;
+            border: 1px solid #1a202c;
+            border-radius: 4px;
+        }
+        .table { width: 100%; border-collapse: collapse; min-width: 600px; }
         .table td, .table th { padding: 0.75rem 0.6rem; text-align: left; border-bottom: 1px solid #1a202c; }
-        .table th { color: #718096; font-size: 0.85rem; text-transform: uppercase; }
+        .table th { color: #718096; font-size: 0.8rem; text-transform: uppercase; background: #0d1117; }
         a { color: #63b3ed; text-decoration: none; }
         a:hover { text-decoration: underline; }
-        .footer { margin-top: 3rem; border-top: 1px dashed #2d3748; padding-top: 1rem; font-size: 0.85rem; color: #718096; }
-        .score-pill { font-weight: bold; padding: 2px 8px; border-radius: 3px; background: #1a202c; }
+        .footer { margin-top: 2.5rem; border-top: 1px dashed #2d3748; padding-top: 1rem; font-size: 0.8rem; color: #718096; }
+        .score-pill { font-weight: bold; padding: 2px 8px; border-radius: 3px; background: #1a202c; white-space: nowrap; }
+
+        @media (max-width: 640px) {
+            body { padding: 1rem 0.75rem; }
+            .status-symbol { font-size: 3.2rem; }
+            .status-title { font-size: 1.3rem; }
+            .status-desc { font-size: 0.85rem; }
+            
+            .posture-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+                padding: 0.6rem 0;
+            }
+            .posture-label { width: 100%; font-size: 0.8rem; }
+            .posture-status { width: 100%; font-size: 0.85rem; margin-bottom: 2px; }
+            .posture-action { text-align: left; font-size: 0.85rem; color: #a0aec0; }
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <strong>OPEN MARKET WEATHER OBSERVATORY // MACRO MATRIX</strong><br>
-        <span class="badge-sub">TIMESTAMP: 2026-11-06 16:47 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA</span><br><br>
-        <a href="weather.json">[Raw JSON API]</a> &nbsp;|&nbsp; 
-        <a href="weather.txt">[Plaintext for cURL]</a> &nbsp;|&nbsp; 
-        <a href="badge.svg">[Live SVG Badge]</a>
+        <span class="badge-sub">TIMESTAMP: 2026-11-06 16:58 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA</span>
+        <div class="header-links">
+            <a href="weather.json">[Raw JSON API]</a> &nbsp;|&nbsp; 
+            <a href="weather.txt">[Plaintext for cURL]</a> &nbsp;|&nbsp; 
+            <a href="badge.svg">[Live SVG Badge]</a>
+        </div>
     </div>
 
     <div class="status-box">
         <span class="status-symbol">⛅</span>
-        <div class="status-title">SCATTERED CLOUDS (SCORE: 27/100)</div>
+        <div class="status-title">SCATTERED CLOUDS (SCORE: 34/100)</div>
         <div class="status-desc">Background operational noise within historical boundaries. No immediate systemic fracture.</div>
     </div>
 
@@ -102,13 +137,13 @@
         </div>
         <div class="posture-item">
             <span class="posture-label">DIP BUYING</span>
-            <span class="posture-status" style="color: #00ff66">FAVORABLE</span>
-            <span class="posture-action">Pullbacks reflect standard liquidity absorption. Support lines holding.</span>
+            <span class="posture-status" style="color: #ff6600">DEFENSIVE</span>
+            <span class="posture-action">Support lines fragile. Do not catch falling knives; preserve capital.</span>
         </div>
         <div class="posture-item">
             <span class="posture-label">DARK POOL</span>
-            <span class="posture-status" style="color: #00ff66">NOMINAL</span>
-            <span class="posture-action">Balanced flow (48.5% off-exchange short ratio on SPY).</span>
+            <span class="posture-status" style="color: #ffcc00">ELEVATED</span>
+            <span class="posture-action">Elevated institutional downside hedging (56.0% SVR on SPY).</span>
         </div>
         <div class="posture-item">
             <span class="posture-label">COLLATERAL</span>
@@ -118,48 +153,50 @@
     </div>
 
     <h3>THE 5 OPERATIONAL PILLARS</h3>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Pillar</th>
-                <th>Underlying Exhaust Feed</th>
-                <th>Live Values</th>
-                <th>Stress Score</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong>1. Market Derivatives</strong></td>
-                <td>S&P 500 VIX + Treasury MOVE Index</td>
-                <td>VIX: 23.87 | MOVE: 92.65</td>
-                <td><span class="score-pill">39/100</span></td>
-            </tr>
-            <tr>
-                <td><strong>2. Dark Pool Flow</strong></td>
-                <td>FINRA Reg SHO Daily Short Volume (SPY)</td>
-                <td>Short Ratio: 48.5% (NMS)</td>
-                <td><span class="score-pill">30/100</span></td>
-            </tr>
-            <tr>
-                <td><strong>3. Dollar Plumbing</strong></td>
-                <td>U.S. TGA Cash + NY Fed Central Bank Swaps</td>
-                <td>TGA: $750.0B | Swaps: $0.0B</td>
-                <td><span class="score-pill">14/100</span></td>
-            </tr>
-            <tr>
-                <td><strong>4. Statutory Credit Risk</strong></td>
-                <td>SEC 8-K Form (Item 2.04 Acceleration - 14D)</td>
-                <td>Active Filings: 13</td>
-                <td><span class="score-pill">52/100</span></td>
-            </tr>
-            <tr>
-                <td><strong>5. Cognitive & Logistics</strong></td>
-                <td>Wikimedia Desk Traffic + CBP Laredo Freight</td>
-                <td>Analyst Z: +0.1σ | Border: 25m</td>
-                <td><span class="score-pill">3/100</span></td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Pillar</th>
+                    <th>Underlying Exhaust Feed</th>
+                    <th>Live Values</th>
+                    <th>Stress Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>1. Market Derivatives</strong></td>
+                    <td>S&P 500 VIX + Treasury MOVE Index</td>
+                    <td>VIX: 23.84 | MOVE: 92.65</td>
+                    <td><span class="score-pill">39/100</span></td>
+                </tr>
+                <tr>
+                    <td><strong>2. Dark Pool Flow</strong></td>
+                    <td>FINRA Reg SHO Daily Short Volume (SPY)</td>
+                    <td>Short Ratio: 56.0% (20261105)</td>
+                    <td><span class="score-pill">70/100</span></td>
+                </tr>
+                <tr>
+                    <td><strong>3. Dollar Plumbing</strong></td>
+                    <td>U.S. TGA Cash + NY Fed Central Bank Swaps</td>
+                    <td>TGA: $850.0B (5D: 0.0B) | Swaps: $0.0B</td>
+                    <td><span class="score-pill">10/100</span></td>
+                </tr>
+                <tr>
+                    <td><strong>4. Statutory Credit Risk</strong></td>
+                    <td>SEC 8-K Form (Item 2.04 Acceleration - 14D)</td>
+                    <td>Active Filings: 13</td>
+                    <td><span class="score-pill">52/100</span></td>
+                </tr>
+                <tr>
+                    <td><strong>5. Cognitive & Logistics</strong></td>
+                    <td>Wikimedia Desk Traffic + CBP Laredo Freight</td>
+                    <td>Analyst Z: +0.1σ | Border: 20m</td>
+                    <td><span class="score-pill">2/100</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
     <div class="footer">
         Decentralized public utility. Built on FINRA off-exchange flows, physics, central bank balance sheets, and statutory disclosures.<br>
