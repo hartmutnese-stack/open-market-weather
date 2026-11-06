@@ -1,15 +1,18 @@
 
 ======================================================================
- OPEN MARKET WEATHER OBSERVATORY // RAW SYSTEMIC FRICTION
- 2026-11-06 16:19 UTC // ZERO COMMERCIAL BIAS // OPEN EXHAUST DATA
+ OPEN MARKET WEATHER OBSERVATORY // MULTI-VECTOR FRICTION MATRIX
+ 2026-11-06 16:30 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA
 ======================================================================
 
- STATUS: ☀️ CLEAR SKIES [Score: 9/100]
- DETAIL: Systemic friction minimal. Normal market regime, liquidity undisturbed.
+ OVERALL STATUS : ⛅ SCATTERED CLOUDS [Score: 35/100]
+ CURRENT REGIME : Background operational noise within historical boundaries. No immediate systemic fracture.
 
- --- SEISMIC VECTORS ---
- [Cognitive]  Risk Desk Research Spike: Z-Score: +0.14σ (7 crisis terms)
- [Liquidity]  US Treasury Cash Balance:  $750.0B (Delta: 0.0B)
+ --- 5 OPERATIONAL PILLARS ---
+ [1] Market Options Vola    : Score 41/100 (VIX: 24.77 | MOVE: 92.67)
+ [2] Global Dollar Plumbing : Score 14/100 (TGA: $750.0B | Swaps: $0.0B)
+ [3] Statutory Credit Risk  : Score 100/100 (SEC Form 8-K Item 2.04 Filings: 10000)
+ [4] Logistics & Sovereign  : Score 8/100 (Laredo Border Delay: 25m | Debt B2C: 2.5x)
+ [5] Cognitive / Air Kinetic: Score 5/100 (Analyst Z: +0.1σ | BIS Air Corridor: 49)
 
- API Endpoint: curl https://marketweather.org/weather.json
+ API Endpoint: curl -sL https://marketweather.pages.dev/weather.json
 ======================================================================

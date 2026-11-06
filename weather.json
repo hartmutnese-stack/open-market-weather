@@ -1,15 +1,34 @@
 {
-  "timestamp": "2026-11-06 16:19 UTC",
-  "composite_score": 9,
-  "status": "\u2600\ufe0f CLEAR SKIES",
-  "desc": "Systemic friction minimal. Normal market regime, liquidity undisturbed.",
-  "color": "#00ff66",
-  "signals": {
-    "analyst_panic_z_score": 0.14,
-    "analyst_panic_score": 3,
-    "analyst_terms_tracked": 7,
-    "treasury_tga_billions": 750.0,
-    "treasury_5d_flow_billions": 0.0,
-    "treasury_friction_score": 15
+  "timestamp": "2026-11-06 16:30 UTC",
+  "composite_score": 35,
+  "status": "\u26c5 SCATTERED CLOUDS",
+  "desc": "Background operational noise within historical boundaries. No immediate systemic fracture.",
+  "color": "#ffcc00",
+  "pillars": {
+    "market_implied": {
+      "score": 41,
+      "vix": 24.77,
+      "move_index": 92.67
+    },
+    "liquidity_plumbing": {
+      "score": 14,
+      "tga_billions": 750.0,
+      "tga_5d_flow": 0.0,
+      "central_bank_swaps_billions": 0.0
+    },
+    "credit_and_statutory": {
+      "score": 100,
+      "sec_8k_covenant_breaches": 10000
+    },
+    "physical_logistics": {
+      "score": 8,
+      "border_freight_delay_min": 25,
+      "treasury_bid_to_cover": 2.5
+    },
+    "cognitive_and_kinetic": {
+      "score": 5,
+      "wiki_analyst_z_score": 0.1,
+      "central_bank_airspace_flights": 49
+    }
   }
 }
