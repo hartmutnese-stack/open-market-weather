@@ -1,34 +1,35 @@
 {
-  "timestamp": "2026-11-06 16:30 UTC",
-  "composite_score": 35,
-  "status": "\u26c5 SCATTERED CLOUDS",
+  "timestamp": "2026-11-06 16:36 UTC",
+  "symbol": "\u26c5",
+  "composite_score": 26,
+  "status": "SCATTERED CLOUDS",
   "desc": "Background operational noise within historical boundaries. No immediate systemic fracture.",
   "color": "#ffcc00",
   "pillars": {
     "market_implied": {
       "score": 41,
-      "vix": 24.77,
-      "move_index": 92.67
+      "vix": 24.84,
+      "move_index": 92.65
     },
     "liquidity_plumbing": {
       "score": 14,
       "tga_billions": 750.0,
       "tga_5d_flow": 0.0,
-      "central_bank_swaps_billions": 0.0
+      "swaps_billions": 0.0
     },
     "credit_and_statutory": {
-      "score": 100,
-      "sec_8k_covenant_breaches": 10000
+      "score": 52,
+      "sec_8k_filings": 13
     },
     "physical_logistics": {
       "score": 8,
-      "border_freight_delay_min": 25,
-      "treasury_bid_to_cover": 2.5
+      "border_wait": 25,
+      "b2c_ratio": 2.5
     },
     "cognitive_and_kinetic": {
       "score": 5,
-      "wiki_analyst_z_score": 0.1,
-      "central_bank_airspace_flights": 49
+      "wiki_z": 0.1,
+      "flights": 38
     }
   }
 }

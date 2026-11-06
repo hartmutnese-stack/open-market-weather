@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market Weather // Macro Observatory</title>
-    <meta name="description" content="Decentralized systemic risk barometer tracking real-world physical, statutory, and liquidity exhaust data.">
     <style>
         body {
             background: #090b0e;
@@ -20,10 +19,29 @@
         .status-box {
             border: 2px solid #ffcc00;
             background: #111419;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
+            padding: 2rem 1.5rem;
+            margin-bottom: 2.5rem;
+            text-align: center;
         }
-        .status-title { font-size: 1.7rem; color: #ffcc00; margin: 0 0 0.5rem 0; font-weight: bold; }
+        .status-symbol {
+            font-size: 4rem;
+            line-height: 1;
+            margin-bottom: 0.8rem;
+            display: block;
+        }
+        .status-title {
+            font-size: 1.8rem;
+            color: #ffcc00;
+            margin: 0 0 0.6rem 0;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .status-desc {
+            color: #9ca3af;
+            font-size: 1.05rem;
+            max-width: 650px;
+            margin: auto;
+        }
         .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         .table td, .table th { padding: 0.75rem 0.6rem; text-align: left; border-bottom: 1px solid #1a202c; }
         .table th { color: #718096; font-size: 0.85rem; text-transform: uppercase; }
@@ -36,15 +54,16 @@
 <body>
     <div class="header">
         <strong>OPEN MARKET WEATHER OBSERVATORY // MULTI-VECTOR MATRIX</strong><br>
-        <span class="badge-sub">TIMESTAMP: 2026-11-06 16:30 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA</span><br><br>
+        <span class="badge-sub">TIMESTAMP: 2026-11-06 16:36 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA</span><br><br>
         <a href="weather.json">[Raw JSON API]</a> &nbsp;|&nbsp; 
         <a href="weather.txt">[Plaintext for cURL]</a> &nbsp;|&nbsp; 
         <a href="badge.svg">[Live SVG Badge]</a>
     </div>
 
     <div class="status-box">
-        <div class="status-title">⛅ SCATTERED CLOUDS (SCORE: 35/100)</div>
-        <p style="margin: 0; font-size: 1.05rem;">Background operational noise within historical boundaries. No immediate systemic fracture.</p>
+        <span class="status-symbol">⛅</span>
+        <div class="status-title">SCATTERED CLOUDS (SCORE: 26/100)</div>
+        <div class="status-desc">Background operational noise within historical boundaries. No immediate systemic fracture.</div>
     </div>
 
     <h3>THE 5 OPERATIONAL PILLARS</h3>
@@ -61,7 +80,7 @@
             <tr>
                 <td><strong>1. Market Derivatives</strong></td>
                 <td>S&P 500 VIX + Treasury MOVE Index</td>
-                <td>VIX: 24.77 | MOVE: 92.67</td>
+                <td>VIX: 24.84 | MOVE: 92.65</td>
                 <td><span class="score-pill">41/100</span></td>
             </tr>
             <tr>
@@ -72,9 +91,9 @@
             </tr>
             <tr>
                 <td><strong>3. Statutory Credit Risk</strong></td>
-                <td>SEC 8-K Form (Item 2.04 Debt Covenant Acceleration)</td>
-                <td>Active Filings: 10000</td>
-                <td><span class="score-pill">100/100</span></td>
+                <td>SEC 8-K Form (Item 2.04 Acceleration - 14D)</td>
+                <td>Active Filings: 13</td>
+                <td><span class="score-pill">52/100</span></td>
             </tr>
             <tr>
                 <td><strong>4. Physical & Sovereign</strong></td>
@@ -85,7 +104,7 @@
             <tr>
                 <td><strong>5. Cognitive & Kinetic</strong></td>
                 <td>Wikimedia Desk Traffic + BIS Basel Air Corridor</td>
-                <td>Analyst Z: +0.1σ | Flights: 49</td>
+                <td>Analyst Z: +0.1σ | Flights: 38</td>
                 <td><span class="score-pill">5/100</span></td>
             </tr>
         </tbody>
