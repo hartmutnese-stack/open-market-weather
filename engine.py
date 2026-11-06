@@ -5,9 +5,8 @@ import urllib.request
 import urllib.error
 from datetime import datetime, timedelta
 
-# --- GLOBALE KONFIGURATION ---
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) OpenMarketWeather/2.0 (macro-observatory; contact@marktwetter.org)"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) OpenMarketWeather/2.1 (contact@marktwetter.org)"
 }
 
 def fetch_json(url, timeout=10):
@@ -19,14 +18,10 @@ def fetch_json(url, timeout=10):
         print(f"[!] Warning: Could not fetch {url}: {e}")
         return None
 
-# ==============================================================================
-# SÄULE 1: MARKT-MECHANIK (VIX & MOVE INDEX)
-# ==============================================================================
+# 1. MARKT-MECHANIK (VIX & MOVE)
 def get_market_volatility():
-    # Direktabfrage Yahoo Finance Chart Endpoints (VIX & MOVE)
     tickers = {"VIX": "%5EVIX", "MOVE": "%5EMOVE"}
     scores = {}
-    
     for name, ticker in tickers.items():
         url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=5d"
         data = fetch_json(url)
@@ -34,27 +29,21 @@ def get_market_volatility():
         if data and "chart" in data and data["chart"]["result"]:
             meta = data["chart"]["result"][0].get("meta", {})
             val = meta.get("regularMarketPrice")
-            
         if val is not None:
             if name == "VIX":
-                # VIX Normalisierung: <15 ruhig, >30 Sturm
                 score = min(100, max(0, int((val - 12) * (100 / 23))))
                 scores["vix"] = (score, round(val, 2))
             elif name == "MOVE":
-                # MOVE Normalisierung: <80 ruhig, >140 Anleihepanik
                 score = min(100, max(0, int((val - 70) * (100 / 80))))
                 scores["move"] = (score, round(val, 2))
         else:
-            scores[name.lower()] = (20, 16.5 if name == "VIX" else 95.0) # Plausibler Fallback
+            scores[name.lower()] = (20, 16.5 if name == "VIX" else 95.0)
             
     avg_score = int((scores["vix"][0] * 0.5) + (scores["move"][0] * 0.5))
     return avg_score, scores["vix"][1], scores["move"][1]
 
-# ==============================================================================
-# SÄULE 2: LIQUIDITÄT & DOLLAR-PLUMBING (TGA & NY FED SWAPS)
-# ==============================================================================
+# 2. DOLLAR PLUMBING (TGA & SWAPS)
 def get_liquidity_plumbing():
-    # 1. TGA Operating Cash Balance (mit gefixtem Null-Check!)
     tga_url = "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/dts/dts_table_1?sort=-record_date&page[size]=50"
     data = fetch_json(tga_url)
     tga_bal, tga_change, tga_score = 750.0, 0.0, 20
@@ -79,7 +68,6 @@ def get_liquidity_plumbing():
             tga_bal = latest / 1000
             tga_score = min(100, int(abs(tga_change) * 1.5))
 
-    # 2. NY Fed Central Bank Liquidity Swaps
     swaps_url = "https://markets.newyorkfed.org/api/fxs/all/latest.json"
     swap_data = fetch_json(swaps_url)
     swap_volume_b = 0.0
@@ -88,37 +76,46 @@ def get_liquidity_plumbing():
             amt = deal.get("amount", 0)
             swap_volume_b += float(amt) / 1000000000
             
-    swap_score = min(100, int(swap_volume_b * 10)) # >10 Mrd. USD Abruf deutet auf Stress hin
+    swap_score = min(100, int(swap_volume_b * 10))
     composite = int((tga_score * 0.7) + (swap_score * 0.3))
-    return composite, round(tga_bal, 1), round(tga_change, 1), round(swap_volume_b, 2), composite
+    return composite, round(tga_bal, 1), round(tga_change, 1), round(swap_volume_b, 2)
 
-# ==============================================================================
-# SÄULE 3: PHYSIK & HANDEL (CBP GRENZSTAU & TREASURY BID-TO-COVER)
-# ==============================================================================
-def get_physical_and_debt_strain():
-    # 1. CBP Border Wait Times (Laredo, Texas - World Trade Bridge)
+# 3. KREDIT & RECHT (SEC 8-K ITEM 2.04 - MIT 14-TAGE FILTER)
+def get_credit_distress_vector():
+    today = datetime.utcnow()
+    two_weeks_ago = (today - timedelta(days=14)).strftime("%Y-%m-%d")
+    today_str = today.strftime("%Y-%m-%d")
+    
+    # Präziser Datumsfilter auf die letzten 14 Tage
+    sec_url = f"https://efts.sec.gov/LATEST/search-index?q=%22Item+2.04%22&forms=8-K&startdt={two_weeks_ago}&enddt={today_str}"
+    sec_data = fetch_json(sec_url, timeout=6)
+    filing_count = 0
+    
+    if sec_data and "hits" in sec_data and "total" in sec_data["hits"]:
+        filing_count = sec_data["hits"]["total"].get("value", 0)
+        
+    # Realistische Skala: 0-8 normal, 9-20 Warnung, >25 Systemkrise
+    credit_score = min(100, max(5, int(filing_count * 4.0)))
+    return credit_score, filing_count
+
+# 4. LOGISTIK & ANLEIHE-AUKTIONEN
+def get_physical_and_debt():
     cbp_url = "https://bwt.cbp.gov/api/bwturl"
     cbp_data = fetch_json(cbp_url)
-    laredo_wait_min = 25 # Normalzustand
-    
+    laredo_wait_min = 25
     if cbp_data and isinstance(cbp_data, list):
         for port in cbp_data:
             if "Laredo" in port.get("port_name", ""):
-                commercial = port.get("commercial_lanes", {})
-                std_lanes = commercial.get("standard_lanes", {})
-                delay = std_lanes.get("delay_minutes")
+                delay = port.get("commercial_lanes", {}).get("standard_lanes", {}).get("delay_minutes")
                 if delay and delay.isdigit():
                     laredo_wait_min = int(delay)
                     break
                     
-    # Normalisierung LKW-Stau: 0-30 min normal, >120 min Lieferkettenabriss
     logistics_score = min(100, max(0, int((laredo_wait_min - 20) * (100 / 100))))
 
-    # 2. US Treasury Auction Demand (Bid-to-Cover Ratio)
     auct_url = "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/auctions_query?sort=-record_date&page[size]=5"
     auct_data = fetch_json(auct_url)
-    b2c_ratio = 2.50 # Gesunder Standardwert
-    
+    b2c_ratio = 2.50
     if auct_data and "data" in auct_data and len(auct_data["data"]) > 0:
         for auct in auct_data["data"]:
             ratio = auct.get("bid_to_cover_ratio")
@@ -129,16 +126,12 @@ def get_physical_and_debt_strain():
                 except ValueError:
                     pass
                     
-    # Wenn B2C unter 2.0 fällt = Auktion schwach / Anleihedruck
     debt_score = min(100, max(0, int((2.6 - b2c_ratio) * 125)))
     composite = int((logistics_score * 0.5) + (debt_score * 0.5))
     return composite, laredo_wait_min, round(b2c_ratio, 2)
 
-# ==============================================================================
-# SÄULE 4: KOGNITIVE PANIK & LUFTRUHE (WIKIPEDIA & OPENSKY)
-# ==============================================================================
-def get_cognitive_and_air_vector():
-    # 1. Wikipedia Krisenkorb
+# 5. KOGNITIVE PANIK & LUFTRUHE
+def get_cognitive_and_air():
     articles = ["Bank_run", "Credit_default_swap", "Circuit_breaker_(stock_market)", "Force_majeure", "Bail-in", "Insolvency"]
     today = datetime.utcnow()
     end_date = (today - timedelta(days=1)).strftime("%Y%m%d")
@@ -160,49 +153,24 @@ def get_cognitive_and_air_vector():
     avg_z = sum(anomalies) / len(anomalies) if anomalies else 0.1
     wiki_score = min(100, int(avg_z * 25))
 
-    # 2. OpenSky Network (ADS-B Korridor Basel BIZ / Zürich)
-    # Bounding Box Schweiz/Süddeutschland: lat 47.0-48.0, lon 7.5-8.8
     opensky_url = "https://opensky-network.org/api/states/all?lamin=47.0&lomin=7.5&lamax=48.0&lomax=8.8"
     air_data = fetch_json(opensky_url, timeout=6)
-    flight_count = 0
-    if air_data and "states" in air_data and air_data["states"]:
-        flight_count = len(air_data["states"])
-        
-    # OpenSky normal: 30-70 Flugzeuge aktiv im Fenster. Spikes am Wochenende deuten auf Krisentreffen.
+    flight_count = len(air_data.get("states", [])) if air_data and "states" in air_data and air_data["states"] else 40
     air_score = 15
-    if today.weekday() in (5, 6) and flight_count > 60: # Wochenende
+    if today.weekday() in (5, 6) and flight_count > 60:
         air_score = 65
         
     composite = int((wiki_score * 0.7) + (air_score * 0.3))
     return composite, round(avg_z, 2), flight_count
 
-# ==============================================================================
-# SÄULE 5: KREDIT-FRIKTION (SEC FORM 8-K ITEM 2.04 & NOTFALL-FENSTER)
-# ==============================================================================
-def get_credit_distress_vector():
-    # SEC EDGAR Volltext-Suchindex für Notfallklausel Item 2.04 (Accelerate Direct Financial Obligation)
-    sec_url = "https://efts.sec.gov/LATEST/search-index?q=%22Item+2.04%22&forms=8-K"
-    sec_data = fetch_json(sec_url, timeout=6)
-    filing_count = 0
-    
-    if sec_data and "hits" in sec_data and "total" in sec_data["hits"]:
-        filing_count = sec_data["hits"]["total"].get("value", 0)
-        
-    # Normalwert der Treffer im aktuellen Zeitraum: <10 normal, >30 Kündigungswelle
-    credit_score = min(100, max(10, int(filing_count * 2.5))) if filing_count > 0 else 18
-    return credit_score, filing_count
-
-# ==============================================================================
-# GESAMT-BERECHNUNG (GEWICHTETE MATRIX)
-# ==============================================================================
+# BERECHNUNG & AUSWERTUNG
 def calculate_systemic_weather():
     mkt_score, vix_val, move_val = get_market_volatility()
-    liq_score, tga_bal, tga_flow, swap_vol, _ = get_liquidity_plumbing()
-    phys_score, laredo_wait, b2c_ratio = get_physical_and_debt_strain()
-    cog_score, wiki_z, air_flights = get_cognitive_and_air_vector()
+    liq_score, tga_bal, tga_flow, swap_vol = get_liquidity_plumbing()
     cred_score, sec_filings = get_credit_distress_vector()
+    phys_score, laredo_wait, b2c_ratio = get_physical_and_debt()
+    cog_score, wiki_z, air_flights = get_cognitive_and_air()
     
-    # Ausbalancierte Gewichtung über alle 5 Säulen
     composite = int(
         (mkt_score * 0.25) +
         (liq_score * 0.25) +
@@ -212,112 +180,54 @@ def calculate_systemic_weather():
     )
     
     if composite < 25:
-        status = "☀️ CLEAR SKIES"
-        desc = "Systemic friction minimal. Normal market regime, macro conduits undisturbed."
+        symbol = "☀️"
+        status = "CLEAR SKIES"
+        desc = "Systemic friction minimal. Normal market regime, liquidity conduits undisturbed."
         color = "#00ff66"
     elif composite < 50:
-        status = "⛅ SCATTERED CLOUDS"
+        symbol = "⛅"
+        status = "SCATTERED CLOUDS"
         desc = "Background operational noise within historical boundaries. No immediate systemic fracture."
         color = "#ffcc00"
     elif composite < 75:
-        status = "🌧️ SQUALL / DOWNPOUR"
-        desc = "ELEVATED SYSTEMIC FRICTION: Detectable divergence in credit covenants or liquidity plumbing."
+        symbol = "🌧️"
+        status = "SQUALL / DOWNPOUR"
+        desc = "ELEVATED SYSTEMIC FRICTION: Notable divergence in credit covenants or liquidity plumbing."
         color = "#ff6600"
     else:
-        status = "⛈️ SEVERE GALE / SYSTEMIC SHOCK"
+        symbol = "⛈️"
+        status = "SEVERE GALE / SYSTEMIC SHOCK"
         desc = "CRITICAL WARNING: Severe multi-vector dislocation across physical, bureaucratic, and market layers."
         color = "#ff0033"
         
     return {
         "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
+        "symbol": symbol,
         "composite_score": composite,
         "status": status,
         "desc": desc,
         "color": color,
         "pillars": {
-            "market_implied": {
-                "score": mkt_score,
-                "vix": vix_val,
-                "move_index": move_val
-            },
-            "liquidity_plumbing": {
-                "score": liq_score,
-                "tga_billions": tga_bal,
-                "tga_5d_flow": tga_flow,
-                "central_bank_swaps_billions": swap_vol
-            },
-            "credit_and_statutory": {
-                "score": cred_score,
-                "sec_8k_covenant_breaches": sec_filings
-            },
-            "physical_logistics": {
-                "score": phys_score,
-                "border_freight_delay_min": laredo_wait,
-                "treasury_bid_to_cover": b2c_ratio
-            },
-            "cognitive_and_kinetic": {
-                "score": cog_score,
-                "wiki_analyst_z_score": wiki_z,
-                "central_bank_airspace_flights": air_flights
-            }
+            "market_implied": {"score": mkt_score, "vix": vix_val, "move_index": move_val},
+            "liquidity_plumbing": {"score": liq_score, "tga_billions": tga_bal, "tga_5d_flow": tga_flow, "swaps_billions": swap_vol},
+            "credit_and_statutory": {"score": cred_score, "sec_8k_filings": sec_filings},
+            "physical_logistics": {"score": phys_score, "border_wait": laredo_wait, "b2c_ratio": b2c_ratio},
+            "cognitive_and_kinetic": {"score": cog_score, "wiki_z": wiki_z, "flights": air_flights}
         }
     }
 
-# ==============================================================================
-# STATIC EXPORT ENGINE
-# ==============================================================================
 def export_files(data):
-    # 1. JSON API
+    p = data["pillars"]
     with open("weather.json", "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
-    # 2. TERMINAL TXT
-    p = data["pillars"]
-    term = f"""
-======================================================================
- OPEN MARKET WEATHER OBSERVATORY // MULTI-VECTOR FRICTION MATRIX
- {data['timestamp']} // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA
-======================================================================
-
- OVERALL STATUS : {data['status']} [Score: {data['composite_score']}/100]
- CURRENT REGIME : {data['desc']}
-
- --- 5 OPERATIONAL PILLARS ---
- [1] Market Options Vola    : Score {p['market_implied']['score']}/100 (VIX: {p['market_implied']['vix']} | MOVE: {p['market_implied']['move_index']})
- [2] Global Dollar Plumbing : Score {p['liquidity_plumbing']['score']}/100 (TGA: ${p['liquidity_plumbing']['tga_billions']}B | Swaps: ${p['liquidity_plumbing']['central_bank_swaps_billions']}B)
- [3] Statutory Credit Risk  : Score {p['credit_and_statutory']['score']}/100 (SEC Form 8-K Item 2.04 Filings: {p['credit_and_statutory']['sec_8k_covenant_breaches']})
- [4] Logistics & Sovereign  : Score {p['physical_logistics']['score']}/100 (Laredo Border Delay: {p['physical_logistics']['border_freight_delay_min']}m | Debt B2C: {p['physical_logistics']['treasury_bid_to_cover']}x)
- [5] Cognitive / Air Kinetic: Score {p['cognitive_and_kinetic']['score']}/100 (Analyst Z: +{p['cognitive_and_kinetic']['wiki_analyst_z_score']}σ | BIS Air Corridor: {p['cognitive_and_kinetic']['central_bank_airspace_flights']})
-
- API Endpoint: curl -sL https://{os.environ.get('CF_PAGES_URL', 'marketweather.pages.dev')}/weather.json
-======================================================================
-"""
-    with open("weather.txt", "w", encoding="utf-8") as f:
-        f.write(term)
-
-    # 3. SVG BADGE
-    badge = f"""<svg xmlns="http://www.w3.org/2000/svg" width="160" height="20">
-    <mask id="a"><rect width="160" height="20" rx="3" fill="#fff"/></mask>
-    <g mask="url(#a)">
-        <path fill="#222" d="M0 0h95v20H0z"/>
-        <path fill="{data['color']}" d="M95 0h65v20H95z"/>
-    </g>
-    <g fill="#fff" text-anchor="middle" font-family="monospace" font-size="11">
-        <text x="47" y="14">MarketWeather</text>
-        <text x="127" y="14" fill="#000" font-weight="bold">{data['composite_score']}/100</text>
-    </g>
-</svg>"""
-    with open("badge.svg", "w", encoding="utf-8") as f:
-        f.write(badge)
-
-    # 4. FULL BRUTALIST DASHBOARD HTML
+    # HTML MIT GROSSEM ZENTRIERTEM WETTER-SYMBOL
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market Weather // Macro Observatory</title>
-    <meta name="description" content="Decentralized systemic risk barometer tracking real-world physical, statutory, and liquidity exhaust data.">
     <style>
         body {{
             background: #090b0e;
@@ -333,10 +243,29 @@ def export_files(data):
         .status-box {{
             border: 2px solid {data['color']};
             background: #111419;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
+            padding: 2rem 1.5rem;
+            margin-bottom: 2.5rem;
+            text-align: center;
         }}
-        .status-title {{ font-size: 1.7rem; color: {data['color']}; margin: 0 0 0.5rem 0; font-weight: bold; }}
+        .status-symbol {{
+            font-size: 4rem;
+            line-height: 1;
+            margin-bottom: 0.8rem;
+            display: block;
+        }}
+        .status-title {{
+            font-size: 1.8rem;
+            color: {data['color']};
+            margin: 0 0 0.6rem 0;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }}
+        .status-desc {{
+            color: #9ca3af;
+            font-size: 1.05rem;
+            max-width: 650px;
+            margin: auto;
+        }}
         .table {{ width: 100%; border-collapse: collapse; margin-top: 1rem; }}
         .table td, .table th {{ padding: 0.75rem 0.6rem; text-align: left; border-bottom: 1px solid #1a202c; }}
         .table th {{ color: #718096; font-size: 0.85rem; text-transform: uppercase; }}
@@ -356,8 +285,9 @@ def export_files(data):
     </div>
 
     <div class="status-box">
+        <span class="status-symbol">{data['symbol']}</span>
         <div class="status-title">{data['status']} (SCORE: {data['composite_score']}/100)</div>
-        <p style="margin: 0; font-size: 1.05rem;">{data['desc']}</p>
+        <div class="status-desc">{data['desc']}</div>
     </div>
 
     <h3>THE 5 OPERATIONAL PILLARS</h3>
@@ -380,25 +310,25 @@ def export_files(data):
             <tr>
                 <td><strong>2. Dollar Plumbing</strong></td>
                 <td>U.S. TGA Cash + NY Fed Central Bank Swaps</td>
-                <td>TGA: ${p['liquidity_plumbing']['tga_billions']}B | Swaps: ${p['liquidity_plumbing']['central_bank_swaps_billions']}B</td>
+                <td>TGA: ${p['liquidity_plumbing']['tga_billions']}B | Swaps: ${p['liquidity_plumbing']['swaps_billions']}B</td>
                 <td><span class="score-pill">{p['liquidity_plumbing']['score']}/100</span></td>
             </tr>
             <tr>
                 <td><strong>3. Statutory Credit Risk</strong></td>
-                <td>SEC 8-K Form (Item 2.04 Debt Covenant Acceleration)</td>
-                <td>Active Filings: {p['credit_and_statutory']['sec_8k_covenant_breaches']}</td>
+                <td>SEC 8-K Form (Item 2.04 Acceleration - 14D)</td>
+                <td>Active Filings: {p['credit_and_statutory']['sec_8k_filings']}</td>
                 <td><span class="score-pill">{p['credit_and_statutory']['score']}/100</span></td>
             </tr>
             <tr>
                 <td><strong>4. Physical & Sovereign</strong></td>
                 <td>CBP Freight Border Delay (Laredo) + Auction B2C</td>
-                <td>Wait: {p['physical_logistics']['border_freight_delay_min']}m | Debt Demand: {p['physical_logistics']['treasury_bid_to_cover']}x</td>
+                <td>Wait: {p['physical_logistics']['border_wait']}m | Debt Demand: {p['physical_logistics']['b2c_ratio']}x</td>
                 <td><span class="score-pill">{p['physical_logistics']['score']}/100</span></td>
             </tr>
             <tr>
                 <td><strong>5. Cognitive & Kinetic</strong></td>
                 <td>Wikimedia Desk Traffic + BIS Basel Air Corridor</td>
-                <td>Analyst Z: +{p['cognitive_and_kinetic']['wiki_analyst_z_score']}σ | Flights: {p['cognitive_and_kinetic']['central_bank_airspace_flights']}</td>
+                <td>Analyst Z: +{p['cognitive_and_kinetic']['wiki_z']}σ | Flights: {p['cognitive_and_kinetic']['flights']}</td>
                 <td><span class="score-pill">{p['cognitive_and_kinetic']['score']}/100</span></td>
             </tr>
         </tbody>
@@ -416,7 +346,7 @@ def export_files(data):
         f.write(html)
 
 if __name__ == "__main__":
-    print("[*] Running Multi-Vector Macro Matrix Engine...")
+    print("[*] Running Optimized Macro Engine v2.1...")
     w = calculate_systemic_weather()
     export_files(w)
     print(f"[+] Complete: Overall Score is {w['composite_score']}/100 -> {w['status']}")
