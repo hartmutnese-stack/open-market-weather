@@ -1,0 +1,33 @@
+name: Update Market Weather
+
+on:
+  schedule:
+    # Läuft alle 4 Stunden (00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC)
+    - cron: '0 */4 * * *'
+  workflow_dispatch: # Ermöglicht es, den Job jederzeit per Hand mit einem Klick zu starten
+
+permissions:
+  contents: write
+
+jobs:
+  run-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Skript ausführen
+        run: python engine.py
+
+      - name: Änderungen speichern und pushen
+        run: |
+          git config --global user.name "MarketWeatherBot"
+          git config --global user.email "bot@marktwetter.org"
+          git add index.html weather.json weather.txt
+          # Nur committen, wenn sich die Daten tatsächlich geändert haben
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-Update: Marktwetter aktualisiert [skip ci]" && git push)
