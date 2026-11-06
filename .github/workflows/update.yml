@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Code auschecken
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Python einrichten
         uses: actions/setup-python@v5
@@ -28,4 +30,8 @@ jobs:
           git config --global user.name "MarketWeatherBot"
           git config --global user.email "bot@marktwetter.org"
           git add index.html weather.json weather.txt badge.svg
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-Update: Market weather updated" && git push)
+          if ! git diff --staged --quiet; then
+            git commit -m "Auto-Update: Market weather updated"
+            git pull --rebase origin main
+            git push
+          fi
