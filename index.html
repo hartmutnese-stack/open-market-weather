@@ -1,18 +1,17 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marktwetter // Unabhängiges Volatilitäts-Observatorium</title>
-    <meta name="description" content="Ein offenes Barometer für systemische Marktvolatilität basierend auf unmanipulierbaren Rohdaten.">
-    <!-- JSON-LD für Suchmaschinen / Schema.org -->
+    <title>Market Weather // Open Volatility Observatory</title>
+    <meta name="description" content="An open-source systemic friction barometer based on raw, unmanipulated operational exhaust data.">
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SpecialAnnouncement",
       "name": "Open Market Weather Forecast",
-      "datePosted": "2026-11-06 15:55 UTC",
-      "text": "☀️ RUHIGER HIMMEL - Score: 14/100"
+      "datePosted": "2026-11-06 16:10 UTC",
+      "text": "☀️ CLEAR SKIES - Score: 9/100"
     }
     </script>
     <style>
@@ -21,7 +20,7 @@
             color: #d1d5db;
             font-family: 'Courier New', Courier, monospace;
             padding: 2rem;
-            max-width: 800px;
+            max-width: 820px;
             margin: auto;
             line-height: 1.5;
         }
@@ -35,51 +34,55 @@
         }
         .status-title { font-size: 1.6rem; color: #00ff66; margin: 0 0 0.5rem 0; font-weight: bold; }
         .table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
-        .table td, .table th { padding: 0.6rem; text-align: left; border-bottom: 1px solid #1f2937; }
-        .table th { color: #9ca3af; }
+        .table td, .table th { padding: 0.75rem 0.5rem; text-align: left; border-bottom: 1px solid #1f2937; }
+        .table th { color: #9ca3af; font-size: 0.9rem; }
         a { color: #60a5fa; text-decoration: none; }
         a:hover { text-decoration: underline; }
         .footer { margin-top: 3rem; border-top: 1px dashed #374151; padding-top: 1rem; font-size: 0.85rem; color: #6b7280; }
+        code { background: #1f2937; padding: 2px 5px; color: #f3f4f6; }
     </style>
 </head>
 <body>
     <div class="header">
         <strong>OPEN MARKET WEATHER OBSERVATORY</strong><br>
-        <span class="badge">STAND: 2026-11-06 15:55 UTC // E2.MICRO ENGINE // ZERO COMMERCIAL BIAS</span><br>
-        <a href="weather.json">[Raw JSON API]</a> | <a href="weather.txt">[Plaintext for cURL]</a>
+        <span class="badge">AS OF: 2026-11-06 16:10 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA</span><br><br>
+        <a href="weather.json">[Raw JSON API]</a> &nbsp;|&nbsp; 
+        <a href="weather.txt">[Plaintext for cURL]</a> &nbsp;|&nbsp; 
+        <a href="badge.svg">[Live SVG Badge]</a>
     </div>
 
     <div class="status-box">
-        <div class="status-title">☀️ RUHIGER HIMMEL (14/100)</div>
-        <p>Systemische Friktion minimal. Normale Marktphasen, Liquidität stabil.</p>
+        <div class="status-title">☀️ CLEAR SKIES (9/100)</div>
+        <p>Systemic friction minimal. Normal market regime, liquidity undisturbed.</p>
     </div>
 
-    <h3>SYSTEMISCHE VEKTOREN (ROHDATEN)</h3>
+    <h3>SYSTEMIC VECTORS (RAW OBSERVATIONS)</h3>
     <table class="table">
         <thead>
             <tr>
-                <th>Vektor</th>
-                <th>Messwert</th>
-                <th>Zustand</th>
+                <th>Vector</th>
+                <th>Observation & Source</th>
+                <th>Friction Score</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td><strong>Analysten-Recherche</strong><br><small>Wikimedia Desktop Traffic</small></td>
-                <td>Z-Score: +0.27σ</td>
-                <td>Score: 6/100</td>
+                <td><strong>Cognitive Distress</strong><br><small>Analyst Search Volume (7 Crisis Terms)</small></td>
+                <td>Z-Score: +0.14σ<br><small>Wikimedia REST API (Desktop Users Only)</small></td>
+                <td><strong>3/100</strong></td>
             </tr>
             <tr>
-                <td><strong>US-Girokonto (TGA)</strong><br><small>Treasury Operating Balance</small></td>
-                <td>$0.0 Mrd. (5T: 0.0 Mrd.)</td>
-                <td>Score: 20/100</td>
+                <td><strong>U.S. Cash Plumbing (TGA)</strong><br><small>Treasury Operating Balance</small></td>
+                <td>$750.0B (5-Day Net Flow: 0.0B)<br><small>U.S. Fiscal Data Service</small></td>
+                <td><strong>15/100</strong></td>
             </tr>
         </tbody>
     </table>
 
     <div class="footer">
-        Freies Web-Projekt. Keine Anlageberatung. Basiert auf öffentlichen Behörden- und Physikschnittstellen.<br>
-        Terminal: <code>curl https://marktwetter.org/weather.txt</code>
+        Independent public utility. Powered by physical, bureaucratic, and cognitive exhaust data.<br>
+        Terminal access: <code>curl -sL [YOUR-URL]/weather.txt</code><br>
+        Embeddable badge: <code>&lt;img src="[YOUR-URL]/badge.svg"&gt;</code>
     </div>
 </body>
 </html>

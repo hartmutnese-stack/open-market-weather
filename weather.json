@@ -1,14 +1,15 @@
 {
-  "timestamp": "2026-11-06 15:55 UTC",
-  "composite_score": 14,
-  "status": "\u2600\ufe0f RUHIGER HIMMEL",
-  "desc": "Systemische Friktion minimal. Normale Marktphasen, Liquidit\u00e4t stabil.",
+  "timestamp": "2026-11-06 16:10 UTC",
+  "composite_score": 9,
+  "status": "\u2600\ufe0f CLEAR SKIES",
+  "desc": "Systemic friction minimal. Normal market regime, liquidity undisturbed.",
   "color": "#00ff66",
   "signals": {
-    "analyst_panic_z_score": 0.27,
-    "analyst_panic_score": 6,
-    "treasury_tga_billions": 0.0,
+    "analyst_panic_z_score": 0.14,
+    "analyst_panic_score": 3,
+    "analyst_terms_tracked": 7,
+    "treasury_tga_billions": 750.0,
     "treasury_5d_flow_billions": 0.0,
-    "treasury_friction_score": 20
+    "treasury_friction_score": 15
   }
 }
