@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-11-06 21:25 UTC",
-  "symbol": "\u26c5",
-  "composite_score": 35,
-  "status": "SCATTERED CLOUDS",
-  "desc": "Background operational noise within historical boundaries. No immediate systemic fracture.",
-  "color": "#ffcc00",
+  "timestamp": "2026-11-07 05:39 UTC",
+  "symbol": "\u2600\ufe0f",
+  "composite_score": 21,
+  "status": "CLEAR SKIES",
+  "desc": "Systemic friction minimal. Normal market regime, macro conduits undisturbed.",
+  "color": "#00ff66",
   "tactical_posture": {
     "grid_bots": {
       "status": "CAUTION",
@@ -12,14 +12,14 @@
       "action": "Widen grid bands by 15-25%. Reduce leverage."
     },
     "dip_buying": {
-      "status": "DEFENSIVE",
-      "color": "#ff6600",
-      "action": "Support lines fragile. Do not catch falling knives; preserve capital."
+      "status": "FAVORABLE",
+      "color": "#00ff66",
+      "action": "Pullbacks reflect standard liquidity absorption. Support lines holding."
     },
     "dark_pool": {
-      "status": "ELEVATED",
-      "color": "#ffcc00",
-      "action": "Elevated institutional downside hedging (56.0% SVR on SPY)."
+      "status": "NOMINAL",
+      "color": "#00ff66",
+      "action": "Balanced flow (42.7% off-exchange short ratio on SPY)."
     },
     "collateral": {
       "status": "STABLE",
@@ -30,13 +30,13 @@
   "pillars": {
     "market_implied": {
       "score": 43,
-      "vix": 25.54,
-      "move_index": 92.81
+      "vix": 25.64,
+      "move_index": 92.77
     },
     "dark_pool_finra": {
-      "score": 70,
-      "spy_short_volume_ratio": 56.0,
-      "report_date": "20261105"
+      "score": 3,
+      "spy_short_volume_ratio": 42.7,
+      "report_date": "20261106"
     },
     "liquidity_plumbing": {
       "score": 10,
@@ -45,12 +45,12 @@
       "swaps_billions": 0.0
     },
     "credit_statutory": {
-      "score": 52,
-      "sec_8k_filings": 13
+      "score": 44,
+      "sec_8k_filings": 11
     },
     "cognitive_physical": {
-      "score": 2,
-      "wiki_z": 0.1,
+      "score": 8,
+      "wiki_z": 0.51,
       "border_wait_m": 20
     }
   }
