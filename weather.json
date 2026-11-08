@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-07 20:57 UTC",
+  "timestamp": "2026-11-08 00:43 UTC",
   "symbol": "\u2600\ufe0f",
   "composite_score": 21,
   "status": "CLEAR SKIES",
@@ -49,8 +49,8 @@
       "sec_8k_filings": 11
     },
     "cognitive_physical": {
-      "score": 8,
-      "wiki_z": 0.51,
+      "score": 9,
+      "wiki_z": 0.53,
       "border_wait_m": 20
     }
   }
