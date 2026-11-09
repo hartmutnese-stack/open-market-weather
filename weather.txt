@@ -1,7 +1,7 @@
 
 ======================================================================
  OPEN MARKET WEATHER OBSERVATORY // HYBRID MACRO & CRYPTO 24/7
- 2026-11-09 08:32 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA
+ 2026-11-09 08:36 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA
 ======================================================================
 
  OVERALL STATUS : CLEAR SKIES [Score: 19/100]
@@ -10,13 +10,13 @@
  --- TACTICAL POSTURE (OPERATIONAL DIRECTIVES) ---
  [*] GRID BOTS      : CAUTION -> Widen grid bands by 15-25%. Reduce leverage / lot sizes.
  [*] DIP BUYING     : FAVORABLE -> Orderly pullbacks. Liquidity supports absorption.
- [*] CRYPTO PERPS   : NOMINAL -> Healthy derivatives leverage (BTC Funding: +5.7% APR).
+ [*] CRYPTO PERPS   : NOMINAL -> Healthy derivatives leverage (BTC Funding: +5.8% APR).
  [*] DARK POOL FLOW : NOMINAL -> Balanced flow (42.7% SVR on SPY).
  [*] COLLATERAL     : STABLE -> No central bank emergency swap usage. Conduits clear.
 
  --- 6 OPERATIONAL PILLARS ---
- [1] TradFi Options Vola    : Score 42/100 (VIX: 24.91 | MOVE: 92.77)
- [2] Crypto 24/7 Leverage   : Score 6/100 (Funding: +5.7% APR | DVOL: 38.4%)
+ [1] TradFi Options Vola    : Score 41/100 (VIX: 24.74 | MOVE: 92.77)
+ [2] Crypto 24/7 Leverage   : Score 6/100 (Funding: +5.8% APR | DVOL: 38.4%)
  [3] Dark Pool Short Ratio  : Score 3/100 (SPY Short: 42.7% | Date: 20261106)
  [4] Global Dollar Plumbing : Score 10/100 (TGA: $850.0B | Swaps: $0.0B)
  [5] Statutory Credit Risk  : Score 44/100 (SEC 8-K Accelerations: 11)
