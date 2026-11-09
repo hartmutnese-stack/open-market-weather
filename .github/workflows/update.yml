@@ -2,7 +2,7 @@ name: Update Market Weather
 
 on:
   schedule:
-    - cron: '21 * * * *'
+    - cron: '*/17 * * * *'
   workflow_dispatch:
 
 permissions:
