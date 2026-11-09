@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-09 19:04 UTC",
+  "timestamp": "2026-11-09 19:30 UTC",
   "symbol": "\u2600\ufe0f",
   "composite_score": 17,
   "status": "CLEAR SKIES",
@@ -19,7 +19,7 @@
     "crypto_perps": {
       "status": "NOMINAL",
       "color": "#00ff66",
-      "action": "Healthy derivatives leverage (BTC Funding: +11.0% APR)."
+      "action": "Healthy derivatives leverage (BTC Funding: +9.5% APR)."
     },
     "dark_pool": {
       "status": "NOMINAL",
@@ -34,14 +34,14 @@
   },
   "pillars": {
     "market_implied": {
-      "score": 28,
-      "vix": 20.11,
-      "move_index": 87.25
+      "score": 27,
+      "vix": 20.15,
+      "move_index": 86.69
     },
     "crypto_247": {
-      "score": 9,
-      "btc_funding_apr": 11.0,
-      "btc_oi_mil": 3162.8,
+      "score": 8,
+      "btc_funding_apr": 9.5,
+      "btc_oi_mil": 3156.4,
       "dvol_index": 39.2
     },
     "dark_pool_finra": {
