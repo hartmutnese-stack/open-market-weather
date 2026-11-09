@@ -1,10 +1,10 @@
 
 ======================================================================
  OPEN MARKET WEATHER OBSERVATORY // HYBRID MACRO & CRYPTO 24/7
- 2026-11-09 14:28 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA
+ 2026-11-09 19:04 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA
 ======================================================================
 
- OVERALL STATUS : CLEAR SKIES [Score: 19/100]
+ OVERALL STATUS : CLEAR SKIES [Score: 17/100]
  CURRENT REGIME : Systemic friction minimal. Normal market regime, macro & crypto conduits undisturbed.
 
  --- TACTICAL POSTURE (OPERATIONAL DIRECTIVES) ---
@@ -15,12 +15,12 @@
  [*] COLLATERAL     : STABLE -> No central bank emergency swap usage. Conduits clear.
 
  --- 6 OPERATIONAL PILLARS ---
- [1] TradFi Options Vola    : Score 37/100 (VIX: 23.19 | MOVE: 90.86)
- [2] Crypto 24/7 Leverage   : Score 9/100 (Funding: +11.0% APR | DVOL: 38.9%)
+ [1] TradFi Options Vola    : Score 28/100 (VIX: 20.11 | MOVE: 87.25)
+ [2] Crypto 24/7 Leverage   : Score 9/100 (Funding: +11.0% APR | DVOL: 39.2%)
  [3] Dark Pool Short Ratio  : Score 3/100 (SPY Short: 42.7% | Date: 20261106)
  [4] Global Dollar Plumbing : Score 10/100 (TGA: $850.0B | Swaps: $0.0B)
  [5] Statutory Credit Risk  : Score 48/100 (SEC 8-K Accelerations: 12)
- [6] Cognitive & Logistics  : Score 10/100 (Analyst Z: +0.58σ | Border: 20m)
+ [6] Cognitive & Logistics  : Score 7/100 (Analyst Z: +0.39σ | Border: 20m)
 
  API: curl -sL https://open-market-weather.hartmut-nese.workers.dev/weather.json
 ======================================================================
