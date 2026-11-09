@@ -1,7 +1,7 @@
 
 ======================================================================
  OPEN MARKET WEATHER OBSERVATORY // UNBIASED MACRO FRICTION
- 2026-11-08 23:46 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA
+ 2026-11-09 06:46 UTC // ZERO COMMERCIAL BIAS // RAW EXHAUST DATA
 ======================================================================
 
  OVERALL STATUS : CLEAR SKIES [Score: 21/100]
@@ -18,7 +18,7 @@
  [2] Dark Pool Short Ratio  : Score 3/100 (SPY Short: 42.7% | Date: 20261106)
  [3] Global Dollar Plumbing : Score 10/100 (TGA: $850.0B [5D: 0.0B] | Swaps: $0.0B)
  [4] Statutory Credit Risk  : Score 44/100 (SEC 8-K Accelerations: 11)
- [5] Cognitive & Logistics  : Score 9/100 (Analyst Z: +0.53σ | Border: 20m)
+ [5] Cognitive & Logistics  : Score 10/100 (Analyst Z: +0.56σ | Border: 20m)
 
  API: curl -sL https://open-market-weather.hartmut-nese.workers.dev/weather.json
 ======================================================================
