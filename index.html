@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>Market Weather (18/100)</title>
+    <title>Market Weather (19/100)</title>
     <meta name="description" content="A weather report for the markets based on public macro and crypto data feeds.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='.9em'%20font-size='90'%3E☀️%3C/text%3E%3C/svg%3E">
     <style>
@@ -93,7 +93,7 @@
         a:hover { text-decoration: underline; }
         .footer { margin-top: 2.5rem; border-top: 1px dashed #2d3748; padding-top: 1rem; font-size: 0.8rem; color: #718096; }
         .score-pill { font-weight: bold; padding: 2px 8px; border-radius: 3px; background: #1a202c; white-space: nowrap; }
-        .tag-fallback { color: #f59e0b; font-size: 0.75rem; margin-left: 4px; }
+        .tag-fallback { color: #f59e0b; font-size: 0.75rem; margin-left: 6px; font-weight: normal; }
         code { background: #1a202c; padding: 2px 6px; border-radius: 3px; color: #e2e8f0; }
 
         @media (max-width: 640px) {
@@ -117,7 +117,7 @@
 <body>
     <div class="header">
         <strong>OPEN MARKET WEATHER OBSERVATORY</strong><br>
-        <span class="badge-sub">TIMESTAMP: 2026-11-10 13:44 UTC // HOURLY REFRESH // HEURISTIC MATRIX</span>
+        <span class="badge-sub">TIMESTAMP: 2026-11-10 13:50 UTC // PERIODIC EDGE RUN // HEURISTIC MATRIX</span>
         <div class="header-links">
             <a href="weather.json">[Raw JSON API]</a> &nbsp;|&nbsp; 
             <a href="weather.txt">[Plaintext for cURL]</a> &nbsp;|&nbsp; 
@@ -127,7 +127,7 @@
 
     <div class="status-box">
         <span class="status-symbol">☀️</span>
-        <div class="status-title">CLEAR SKIES (SCORE: 18/100)</div>
+        <div class="status-title">CLEAR SKIES (SCORE: 19/100)</div>
         <div class="status-desc">Systemic friction minimal. Normal market conditions across macro and crypto feeds.</div>
     </div>
 
@@ -140,8 +140,8 @@
         </div>
         <div class="posture-item">
             <span class="posture-label">DIP BUYING</span>
-            <span class="posture-status" style="color: #00ff66">FAVORABLE</span>
-            <span class="posture-action">Orderly pullbacks. Liquidity supports absorption.</span>
+            <span class="posture-status" style="color: #ff6600">DEFENSIVE</span>
+            <span class="posture-action">Support lines fragile. Do not catch falling knives.</span>
         </div>
         <div class="posture-item">
             <span class="posture-label">CRYPTO PERPS</span>
@@ -175,13 +175,13 @@
                 <tr>
                     <td><strong>1. Market Volatility</strong></td>
                     <td>S&P 500 VIX + Treasury MOVE Index</td>
-                    <td>VIX: 20.03 | MOVE: 85.98</td>
-                    <td><span class="score-pill">26/100</span></td>
+                    <td>VIX: 20.74 | MOVE: 85.98</td>
+                    <td><span class="score-pill">28/100</span></td>
                 </tr>
                 <tr>
                     <td><strong>2. Crypto Leverage</strong></td>
                     <td>Hyperliquid BTC Funding + Deribit DVOL Index</td>
-                    <td>Funding: +11.0% APR | DVOL: 39.5%</td>
+                    <td>Funding: +11.0% APR | DVOL: 39.3%</td>
                     <td><span class="score-pill">9/100</span></td>
                 </tr>
                 <tr>

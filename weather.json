@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-11-10 13:44 UTC",
+  "timestamp": "2026-11-10 13:50 UTC",
   "symbol": "\u2600\ufe0f",
-  "composite_score": 18,
+  "composite_score": 19,
   "status": "CLEAR SKIES",
   "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
   "color": "#00ff66",
   "fallback_flags": {
-    "market_implied": false,
-    "crypto_247": false,
-    "dark_pool_finra": false,
-    "liquidity_plumbing": true,
-    "credit_statutory": false,
+    "market_volatility": false,
+    "crypto_leverage": false,
+    "short_volume": false,
+    "dollar_liquidity": true,
+    "credit_stress": false,
     "odds_and_ends": true
   },
   "tactical_posture": {
@@ -20,9 +20,9 @@
       "action": "Widen grid bands by 15-25%. Reduce leverage / lot sizes."
     },
     "dip_buying": {
-      "status": "FAVORABLE",
-      "color": "#00ff66",
-      "action": "Orderly pullbacks. Liquidity supports absorption."
+      "status": "DEFENSIVE",
+      "color": "#ff6600",
+      "action": "Support lines fragile. Do not catch falling knives."
     },
     "crypto_perps": {
       "status": "NOMINAL",
@@ -42,16 +42,22 @@
   },
   "pillars": {
     "market_implied": {
-      "score": 26,
-      "vix": 20.03,
+      "score": 28,
+      "vix": 20.74,
       "move_index": 85.98,
       "fallback": false
     },
     "crypto_247": {
       "score": 9,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 3100.2,
-      "dvol_index": 39.5,
+      "btc_oi_mil": 3099.0,
+      "dvol_index": 39.3,
+      "fallback": false
+    },
+    "short_volume": {
+      "score": 21,
+      "spy_short_volume_ratio": 46.4,
+      "report_date": "20261109",
       "fallback": false
     },
     "dark_pool_finra": {
@@ -71,6 +77,12 @@
       "score": 44,
       "sec_8k_filings": 11,
       "fallback": false
+    },
+    "cognitive_physical": {
+      "score": 1,
+      "wiki_z": 0.0,
+      "border_wait_m": 20,
+      "fallback": true
     },
     "odds_and_ends": {
       "score": 1,
