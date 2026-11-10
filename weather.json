@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-11-10 03:30 UTC",
+  "timestamp": "2026-11-10 04:00 UTC",
   "symbol": "\u2600\ufe0f",
-  "composite_score": 19,
+  "composite_score": 18,
   "status": "CLEAR SKIES",
   "desc": "Systemic friction minimal. Normal market regime, macro & crypto conduits undisturbed.",
   "color": "#00ff66",
@@ -41,7 +41,7 @@
     "crypto_247": {
       "score": 9,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 3144.6,
+      "btc_oi_mil": 3136.9,
       "dvol_index": 39.2
     },
     "dark_pool_finra": {
@@ -60,8 +60,8 @@
       "sec_8k_filings": 11
     },
     "cognitive_physical": {
-      "score": 7,
-      "wiki_z": 0.36,
+      "score": 1,
+      "wiki_z": 0.0,
       "border_wait_m": 20
     }
   }
