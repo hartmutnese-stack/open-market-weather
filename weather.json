@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-10 16:00 UTC",
+  "timestamp": "2026-11-10 16:30 UTC",
   "symbol": "\u2600\ufe0f",
   "composite_score": 20,
   "status": "CLEAR SKIES",
@@ -42,16 +42,16 @@
   },
   "pillars": {
     "market_implied": {
-      "score": 32,
-      "vix": 20.71,
-      "move_index": 92.07,
+      "score": 31,
+      "vix": 20.49,
+      "move_index": 91.96,
       "fallback": false
     },
     "crypto_247": {
       "score": 9,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 3091.8,
-      "dvol_index": 40.5,
+      "btc_oi_mil": 3108.4,
+      "dvol_index": 40.3,
       "fallback": false
     },
     "short_volume": {
@@ -79,14 +79,14 @@
       "fallback": false
     },
     "cognitive_physical": {
-      "score": 1,
-      "wiki_z": 0.0,
+      "score": 7,
+      "wiki_z": 0.39,
       "border_wait_m": 20,
       "fallback": true
     },
     "odds_and_ends": {
-      "score": 1,
-      "wiki_z": 0.0,
+      "score": 7,
+      "wiki_z": 0.39,
       "border_wait_m": 20,
       "fallback": true
     }
