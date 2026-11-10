@@ -1,15 +1,15 @@
 {
-  "timestamp": "2026-11-10 09:30 UTC",
+  "timestamp": "2026-11-10 10:00 UTC",
   "symbol": "\u2600\ufe0f",
-  "composite_score": 20,
+  "composite_score": 18,
   "status": "CLEAR SKIES",
   "desc": "Systemic friction minimal. Normal market regime, macro & crypto conduits undisturbed.",
   "color": "#00ff66",
   "tactical_posture": {
     "grid_bots": {
-      "status": "CAUTION",
-      "color": "#ffcc00",
-      "action": "Widen grid bands by 15-25%. Reduce leverage / lot sizes."
+      "status": "ACTIVE",
+      "color": "#00ff66",
+      "action": "Favorable range-bound market regime. Mean reversion active."
     },
     "dip_buying": {
       "status": "FAVORABLE",
@@ -34,15 +34,15 @@
   },
   "pillars": {
     "market_implied": {
-      "score": 27,
-      "vix": 20.05,
+      "score": 26,
+      "vix": 19.86,
       "move_index": 85.98
     },
     "crypto_247": {
-      "score": 17,
+      "score": 9,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 3127.5,
-      "dvol_index": 52.0
+      "btc_oi_mil": 3136.1,
+      "dvol_index": 39.1
     },
     "dark_pool_finra": {
       "score": 21,
