@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-11-10 15:00 UTC",
+  "timestamp": "2026-11-10 15:30 UTC",
   "symbol": "\u2600\ufe0f",
-  "composite_score": 20,
+  "composite_score": 19,
   "status": "CLEAR SKIES",
   "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
   "color": "#00ff66",
@@ -17,7 +17,7 @@
     "grid_bots": {
       "status": "CAUTION",
       "color": "#ffcc00",
-      "action": "Widen grid bands by 15-25%. Reduce leverage / lot sizes."
+      "action": "Widen grid bands by 15-25%. Upstream fallback data active on one or more feeds."
     },
     "dip_buying": {
       "status": "DEFENSIVE",
@@ -43,15 +43,15 @@
   "pillars": {
     "market_implied": {
       "score": 30,
-      "vix": 20.73,
-      "move_index": 89.0,
+      "vix": 19.98,
+      "move_index": 91.55,
       "fallback": false
     },
     "crypto_247": {
       "score": 9,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 3195.6,
-      "dvol_index": 39.5,
+      "btc_oi_mil": 3116.0,
+      "dvol_index": 39.2,
       "fallback": false
     },
     "short_volume": {
@@ -79,14 +79,14 @@
       "fallback": false
     },
     "cognitive_physical": {
-      "score": 7,
-      "wiki_z": 0.39,
+      "score": 1,
+      "wiki_z": 0.0,
       "border_wait_m": 20,
       "fallback": true
     },
     "odds_and_ends": {
-      "score": 7,
-      "wiki_z": 0.39,
+      "score": 1,
+      "wiki_z": 0.0,
       "border_wait_m": 20,
       "fallback": true
     }
