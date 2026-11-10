@@ -36,4 +36,69 @@ The daily FINRA file is around 15 MB, so the script reads it line by line instea
 - **Fallbacks.** If a feed fails, the script prints a warning and substitutes a hard-coded default (VIX 16.5, for example). The output doesn't always show that a value is a stand-in, so check the run log if a number looks suspiciously normal.
 - **Short volume is noisy.** A big part of it is market makers hedging, not institutions betting against the market. I use it as a weak signal.
 - **Treasury cash moves in both directions.** The liquidity score goes up when the balance changes a lot, whether it rises or falls.
-- **Unofficial endpoints.*
+- **Unofficial endpoints.** Yahoo, CBP and SEC full-text search aren't stable APIs and can break without notice.
+- **Different clocks.** Crypto data is live. FINRA and Treasury numbers come once a day, with a lag.
+
+## Run it
+
+```bash
+git clone https://github.com/hartmutnese-stack/open-market-weather.git
+cd open-market-weather
+python3 engine.py
+```
+
+Python 3.8+, standard library only. It writes `index.html`, `weather.json`, `weather.txt` and `badge.svg` into the current folder. I run it hourly via GitHub Actions and serve the files from Cloudflare, which costs me nothing.
+
+## Using it in a bot
+
+`weather.json` has a `tactical_posture` block with plain-language suggestions. The one for grid bots works like this:
+
+- **PAUSED** if the crypto score is above 65 or the overall score is 65 or higher
+- **ACTIVE** if the overall score is below 35, VIX is below 20 and the crypto score is below 40
+- **CAUTION** otherwise
+
+So a calm overall score can still end up on CAUTION, as in this trimmed example:
+
+```json
+{
+  "timestamp": "2026-11-09 08:36 UTC",
+  "symbol": "☀️",
+  "composite_score": 19,
+  "status": "CLEAR SKIES",
+  "tactical_posture": {
+    "grid_bots": {
+      "status": "CAUTION",
+      "action": "Widen grid bands by 15-25%. Reduce leverage / lot sizes."
+    }
+  }
+}
+```
+
+Here is how my bot reads it. If the request fails, it just carries on. Whether that's right for you is your call:
+
+```python
+import aiohttp
+
+async def check_macro_circuit_breaker():
+    url = "https://open-market-weather.hartmut-nese.workers.dev/weather.json"
+    timeout = aiohttp.ClientTimeout(total=2.0)
+    try:
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(url) as resp:
+                data = await resp.json()
+        status = data["tactical_posture"]["grid_bots"]["status"]
+        if status == "PAUSED":
+            await cancel_resting_bids_only()      # your own function
+        elif status == "CAUTION":
+            apply_grid_modifiers(spread_mult=1.25, size_mult=0.6)  # yours too
+    except Exception:
+        pass
+```
+
+## Contributing
+
+If you have a better idea for the scoring curves or the weights, or some historical data to calibrate against, open an issue or a PR. I'd like to hear it.
+
+## License
+
+MIT
