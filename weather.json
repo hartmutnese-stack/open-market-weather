@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-10 06:00 UTC",
+  "timestamp": "2026-11-10 06:30 UTC",
   "symbol": "\u2600\ufe0f",
   "composite_score": 19,
   "status": "CLEAR SKIES",
@@ -41,8 +41,8 @@
     "crypto_247": {
       "score": 9,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 3143.4,
-      "dvol_index": 39.2
+      "btc_oi_mil": 3128.1,
+      "dvol_index": 39.1
     },
     "dark_pool_finra": {
       "score": 21,
@@ -61,7 +61,7 @@
     },
     "cognitive_physical": {
       "score": 7,
-      "wiki_z": 0.39,
+      "wiki_z": 0.36,
       "border_wait_m": 20
     }
   }
