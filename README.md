@@ -1,61 +1,75 @@
-# ⛅ Open Market Weather Observatory (OMWO)
+# open-market-weather
 
-> **A decentralized, non-commercial systemic friction barometer tracking TradFi macro plumbing and 24/7 crypto leverage exhaust data.**
+A lightweight, zero-dependency Python script that aggregates unconventional public data sources (FINRA dark pool short volume, U.S. Treasury cash balances, CBP freight delays, SEC 8-K filings, and crypto perps leverage) into a single heuristic market friction index.
 
-[![Market Weather Status](https://open-market-weather.hartmut-nese.workers.dev/badge.svg)](https://open-market-weather.hartmut-nese.workers.dev)
+Designed as an external, zero-cost circuit breaker for automated trading systems (e.g., perpetual grid bots).
+
+* **Live Dashboard:** [https://open-market-weather.hartmut-nese.workers.dev](https://open-market-weather.hartmut-nese.workers.dev)
+* **Raw JSON API:** `https://open-market-weather.hartmut-nese.workers.dev/weather.json`
+* **Plaintext CLI:** `curl -sL https://open-market-weather.hartmut-nese.workers.dev/weather.txt`
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Dependencies](https://img.shields.io/badge/Dependencies-Zero%20(Stdlib%20Only)-brightgreen.svg)]()
-[![Cost](https://img.shields.io/badge/Infrastructure%20Cost-$0%20(Always%20Free)-black.svg)]()
-[![Coverage](https://img.shields.io/badge/Market%20Coverage-24%2F7%20Hybrid%20(TradFi%20%2B%20Crypto)-orange.svg)]()
-
-**Live Terminal & Dashboard:** [https://open-market-weather.hartmut-nese.workers.dev](https://open-market-weather.hartmut-nese.workers.dev)  
-**Machine-Readable API:** [https://open-market-weather.hartmut-nese.workers.dev/weather.json](https://open-market-weather.hartmut-nese.workers.dev/weather.json)
+[![Dependencies](https://img.shields.io/badge/Dependencies-Zero%20(stdlib%20only)-green.svg)]()
+[![Infrastructure Cost](https://img.shields.io/badge/Hosting%20Cost-$0%20(Pages%20+%20Actions)-black.svg)]()
 
 ---
 
-## 🏛️ The Thesis: Operational Exhaust vs. Lagging Noise
+## Motivation
 
-Most retail traders and quantitative algorithms rely on **lagging or circular indicators**: historical price action, RSI, standard moving averages, or media sentiment. By the time a systemic shock surfaces on retail exchanges, institutional capital has already de-risked.
+Most automated retail trading strategies (like grid bots or DCA algorithms) fail during structural regime shifts. They operate on L2 order books with narrow horizon visibility, making them susceptible to liquidation cascades or macro liquidity drains.
 
-Large institutional actors, central banks, and market makers leave **unavoidable physical, bureaucratic, and on-chain footprints** days before public market dislocations occur:
-1. **Thermodynamic & Physical Constraints:** Real-world commercial freight delays at critical trade chokepoints (U.S. Customs Laredo).
-2. **Statutory Obligations:** SEC Form 8-K disclosures legally mandated when corporate debt covenants are accelerated.
-3. **Off-Exchange Order Routing:** FINRA Reg SHO Dark Pool short-sale accumulation before major downward trends.
-4. **Sovereign Liquidity Plumbing:** Rapid drains or injections into the U.S. Treasury General Account (TGA) and Fed Liquidity Swaps.
-5. **24/7 Crypto Derivative Leverage:** Hyperliquid perps funding rate spikes and Deribit Bitcoin Volatility (DVOL) anticipating weekend liquidation cascades.
+Traditional market indicators (RSI, moving averages, Bollinger Bands) are derived directly from the price action they attempt to predict. Conversely, institutional risk tools cost thousands of dollars a month and are locked behind enterprise contracts.
 
-The **Open Market Weather Observatory** aggregates these raw operational exhaust feeds every few hours, standardizes structural friction into a composite score (0–100), and provides an automated circuit-breaker signal for algorithmic trading bots.
+This project monitors operational and regulatory byproduct data that institutions and central entities cannot easily disguise:
+* Physical freight gridlocks at border crossings
+* Rapid drains in the U.S. Treasury General Account (TGA)
+* Off-exchange short volume ratios filed with FINRA
+* Statutory disclosures regarding accelerated debt covenants (SEC Form 8-K)
+* 24/7 perpetual futures funding and implied volatility spikes (Deribit/Hyperliquid)
+
+The script normalizes these disparate inputs into a single 0–100 heuristic index and serves static output files to Cloudflare Pages edge nodes via GitHub Actions.
 
 ---
 
-## ⚡ Instant Terminal Access (CLI)
+## Data Sources & Mechanics
 
-No browser required. Stream the current macro posture directly into your shell or terminal status bar:
+| Vector | Metric | Source | Mechanism / Endpoint |
+| :--- | :--- | :--- | :--- |
+| **TradFi Derivatives** | Implied volatility | CBOE / Financial APIs | S&P 500 VIX and U.S. Treasury MOVE index |
+| **Crypto Leverage (24/7)** | Funding rates & implied volatility | Hyperliquid Native API & Deribit REST | BTC perpetual hourly funding (annualized APR) + Deribit DVOL index |
+| **Dark Pool Shorting** | Consolidated off-exchange short ratio | FINRA Reg SHO (`cdn.finra.org`) | Line-by-line stream of daily NMS flat files filtering `$SPY` volume |
+| **Dollar Plumbing** | Sovereign cash balance & FX swaps | U.S. Fiscal Data Service & NY Fed | DTS Table 1 closing balance + Central Bank Liquidity Swap line utilization |
+| **Credit Stress** | Material debt accelerations | SEC EDGAR Full-Text Search | Rolling 14-day count of 8-K filings citing Item 2.04 (Covenant breaches) |
+| **Friction / Logistics** | Chokepoint delays & cognitive load | U.S. Customs (CBP) & Wikimedia REST API | Real-time commercial truck wait times (Laredo, TX) + 30-day desktop user Z-score across crisis terminology |
+
+---
+
+## Engineering Constraints
+
+* **Zero External Dependencies:** Built strictly using Python's standard library (`urllib.request`, `json`, `math`, `datetime`). No `pandas`, `numpy`, or `requests`.
+* **Low Memory Footprint:** The 15 MB daily FINRA text file is streamed line-by-line over HTTP, isolating the target ticker without allocating the entire dataset into memory. Peak RAM consumption is `< 25 MB`.
+* **Fully Static Edge Serving:** Compute is decoupled from hosting. The script outputs static artifacts (`index.html`, `weather.json`, `weather.txt`, `badge.svg`) that deploy across Cloudflare edge nodes with zero compute overhead on page load.
+* **Cost:** $0. Runs entirely within the free tiers of GitHub Actions and Cloudflare.
+
+---
+
+## Quickstart
+
+Run locally (requires Python 3.8+):
 
 ```bash
-curl -sL https://open-market-weather.hartmut-nese.workers.dev/weather.txt
+git clone https://github.com/hartmutnese-stack/open-market-weather.git
+cd open-market-weather
+python3 engine.py
 ```
 
----
-
-## 🧬 The 6 Operational Pillars
-
-| Pillar | Underlying Exhaust Feed | Live Data Source | Operational Metric Captured |
-| :--- | :--- | :--- | :--- |
-| **1. TradFi Derivatives** | S&P 500 VIX + U.S. Treasury MOVE Index | CBOE / Financial Chart API | Equity options implied volatility vs. bond market volatility. |
-| **2. Crypto 24/7 Leverage** | Hyperliquid BTC Funding + Deribit DVOL | Hyperliquid Native API + Deribit Public REST | Perpetual futures funding pressure (APR) & 24/7 Bitcoin implied volatility. |
-| **3. Dark Pool Flow** | FINRA Reg SHO Daily Short Volume | `cdn.finra.org` (NMS Consolidated) | Off-exchange institutional short-sale ratio on `$SPY`. |
-| **4. Dollar Plumbing** | U.S. Treasury General Account (TGA) + NY Fed Swaps | U.S. Fiscal Data Service / NY Fed Markets API | Net liquidity absorption & sovereign cross-currency dollar strains. |
-| **5. Statutory Credit Risk** | SEC Form 8-K (Item 2.04: Acceleration of Direct Obligations) | SEC EDGAR Full-Text Search (14-Day Window) | Corporate debt covenant breaches across publicly traded U.S. firms. |
-| **6. Cognitive & Logistics** | Wikimedia Crisis Desks + CBP Land Border Waits | Wikimedia REST API (`agent=user`) + U.S. Customs & Border Protection | Institutional analyst panic research vs. physical truck bottlenecks (Laredo). |
+This fetches current upstream feeds and generates `index.html`, `weather.json`, and `weather.txt` in the root directory.
 
 ---
 
-## 🎯 Tactical Posture: Automated Bot Integration
+## API & Bot Integration
 
-The engine translates the 6-pillar composite index into direct, machine-readable operational directives for automated execution (e.g., Grid Bots, Market Makers, and DCA strategies).
-
-### Machine-Readable Endpoint
+The engine outputs structured operational directives targeted at automated execution engines:
 
 ```bash
 curl -sL https://open-market-weather.hartmut-nese.workers.dev/weather.json
@@ -92,60 +106,48 @@ curl -sL https://open-market-weather.hartmut-nese.workers.dev/weather.json
 }
 ```
 
-### Python Circuit Breaker (Async / Hyperliquid / CCXT)
-
-Safely integrate the weather engine as an asynchronous background sentinel without blocking your event loop or order execution:
+### Async Consumer Example (`aiohttp`)
 
 ```python
 import aiohttp
 import asyncio
 
-async def check_weather_circuit_breaker():
+async def check_macro_circuit_breaker():
     url = "https://open-market-weather.hartmut-nese.workers.dev/weather.json"
     timeout = aiohttp.ClientTimeout(total=2.0)
     
     async with aiohttp.ClientSession(timeout=timeout) as session:
         try:
             async with session.get(url) as resp:
-                data = await resp.json()
-                bot_status = data["tactical_posture"]["grid_bots"]["status"]
-                crypto_status = data["tactical_posture"]["crypto_perps"]["status"]
-                
-                # Emergency: Halt buys during macro squalls or crypto liquidation cascades
-                if bot_status == "PAUSED" or crypto_status == "OVERHEATED":
-                    # Cancel resting bids immediately, retain profit-taking asks (Regel B)
-                    await cancel_open_buys_only()
-                elif bot_status == "CAUTION":
-                    # Widen spacing, decrease lot size
-                    adjust_grid_spread(multiplier=1.25, size_factor=0.6)
-        except Exception as e:
-            # Fail-safe: Never crash bot on transient network hiccups
+                if resp.status == 200:
+                    data = await resp.json()
+                    bot_status = data["tactical_posture"]["grid_bots"]["status"]
+                    
+                    if bot_status == "PAUSED":
+                        # Immediate risk reduction: cancel bids, preserve limit asks
+                        await cancel_resting_bids_only()
+                    elif bot_status == "CAUTION":
+                        # Adapt to wider dispersion
+                        apply_grid_modifiers(spread_mult=1.25, size_mult=0.6)
+        except Exception:
+            # Fallback safely: network issues should not halt active execution loops
             pass
 ```
 
 ---
 
-## 🛠️ Zero-Cost, Edge-Native Architecture
+## Notes on Methodology & Limitations
 
-This repository is designed under strict resource-efficiency constraints:
-* **Zero Dependencies:** Built exclusively on the Python standard library (`urllib`, `json`, `math`, `datetime`). Memory footprint is `< 25 MB`.
-* **Zero Server Maintenance:** Compute runs via automated **GitHub Actions** cron schedules.
-* **Global Edge Distribution:** Output files (`index.html`, `weather.json`, `weather.txt`, `badge.svg`) are deployed globally across **Cloudflare Pages** edge nodes with `< 50ms` latency and 100/100 Google Lighthouse scores.
-* **Zero Tracking / Non-Commercial:** No analytics, no cookies, no affiliate trackers, no monetized paywalls.
+The composite index is a pragmatic, rule-of-thumb scoring system configured for personal risk management, **not an econometrically backtested predictive model**:
 
----
+1. **Normalization:** Individual metrics are mapped to 0–100 ranges via linear and clamped scaling against historical standard levels (e.g., VIX bounded between 12 and 35, baseline FINRA short ratio centered around 45–50%).
+2. **Weighting:** The 6-pillar weights (Market: 20%, Crypto: 20%, Dark Pool: 15%, Liquidity: 20%, Credit: 15%, Physical/Cognitive: 10%) are hand-tuned heuristics intended to balance slow-moving fiscal plumbing with 24/7 derivatives leverage.
+3. **Data Availability:** TradFi sources update on U.S. business day cycles, while crypto metrics reflect real-time 24/7 state. The index bridges this gap by weighting crypto perpetuals and volatility continuously.
 
-## 🛡️ Embeddable Badge
-
-Add the live dynamic weather badge to your own open-source trading bots or repository READMEs:
-
-```markdown
-[![Market Weather](https://open-market-weather.hartmut-nese.workers.dev/badge.svg)](https://open-market-weather.hartmut-nese.workers.dev)
-```
+Pull requests and discussions regarding alternative normalization curves, PCA weighting, or broader historical calibration datasets are welcome.
 
 ---
 
-## ⚖️ License & Disclaimer
+## License
 
-Released under the [MIT License](LICENSE).  
-*Disclaimer: This observatory is an open-source technical research tool aggregating public agency and market data. It does not constitute financial or investment advice.*
+MIT
