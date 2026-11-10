@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-10 14:00 UTC",
+  "timestamp": "2026-11-10 14:30 UTC",
   "symbol": "\u2600\ufe0f",
   "composite_score": 19,
   "status": "CLEAR SKIES",
@@ -42,15 +42,15 @@
   },
   "pillars": {
     "market_implied": {
-      "score": 29,
-      "vix": 21.06,
-      "move_index": 85.98,
+      "score": 30,
+      "vix": 20.95,
+      "move_index": 88.88,
       "fallback": false
     },
     "crypto_247": {
       "score": 9,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 3094.9,
+      "btc_oi_mil": 3117.1,
       "dvol_index": 39.4,
       "fallback": false
     },
