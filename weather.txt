@@ -1,7 +1,7 @@
 
 ======================================================================
  OPEN MARKET WEATHER OBSERVATORY // HYBRID MACRO & CRYPTO
- 2026-11-10 21:30 UTC // STANDALONE HEURISTIC // PERIODIC RUN
+ 2026-11-10 21:34 UTC // STANDALONE HEURISTIC // PERIODIC RUN
 ======================================================================
 
  OVERALL STATUS : CLEAR SKIES [Score: 22/100]
@@ -15,7 +15,7 @@
  [*] COLLATERAL     : STABLE -> No central bank emergency swap usage.
 
  --- 6 OPERATIONAL PILLARS ---
- [1] Market Volatility : Score 30/100 (VIX: 19.46 | MOVE: 92.45)
+ [1] Market Volatility : Score 30/100 (VIX: 19.46 | MOVE: 92.43)
  [2] Crypto Leverage   : Score 9/100 (Funding: +11.0% APR | DVOL: 39.6%)
  [3] Short Volume      : Score 21/100 (SPY Short: 46.4% | Date: 20261109)
  [4] Dollar Liquidity  : Score 10/100 (TGA: $850.0B | Swaps: $0.0B) [fallback]
