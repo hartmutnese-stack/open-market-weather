@@ -5,12 +5,19 @@ import urllib.request
 import urllib.error
 from datetime import datetime, timedelta
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 OpenMarketWeather/3.1"
+# Standard-Browser-Header für Yahoo, FINRA etc.
+DEFAULT_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
-def fetch_json(url, timeout=10):
-    req = urllib.request.Request(url, headers=HEADERS)
+# Offiziell konformer SEC-Header (verhindert 403-Bans der Börsenaufsicht)
+SEC_HEADERS = {
+    "User-Agent": "MarketWeatherObservatory/3.2 (contact: admin@marktwetter.org)"
+}
+
+def fetch_json(url, timeout=10, headers=None):
+    req_headers = headers if headers else DEFAULT_HEADERS
+    req = urllib.request.Request(url, headers=req_headers)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as response:
             return json.loads(response.read().decode("utf-8"))
@@ -29,7 +36,7 @@ def get_market_volatility():
         url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=5d"
         data = fetch_json(url)
         val = None
-        if data and "chart" in data and data["chart"]["result"]:
+        if data and "chart" in data and data["chart"].get("result"):
             meta = data["chart"]["result"][0].get("meta", {})
             val = meta.get("regularMarketPrice")
         if val is not None:
@@ -53,7 +60,9 @@ def get_crypto_247_vector():
     btc_funding_apr = 10.0
     btc_oi_mil = 0.0
     dvol_val = 52.0
-    is_fallback = False
+    
+    hl_fallback = True
+    dvol_fallback = True
     
     # 1. Hyperliquid Native API
     try:
@@ -66,14 +75,10 @@ def get_crypto_247_vector():
         )
         with urllib.request.urlopen(req, timeout=6) as resp:
             data = json.loads(resp.read().decode())
-            if len(data) >= 2 and "universe" in data[0]:
+            if isinstance(data, list) and len(data) >= 2 and "universe" in data[0]:
                 universe = data[0]["universe"]
                 asset_ctxs = data[1]
-                btc_idx = None
-                for idx, coin_meta in enumerate(universe):
-                    if coin_meta.get("name") == "BTC":
-                        btc_idx = idx
-                        break
+                btc_idx = next((idx for idx, c in enumerate(universe) if c.get("name") == "BTC"), None)
                 if btc_idx is not None and btc_idx < len(asset_ctxs):
                     ctx = asset_ctxs[btc_idx]
                     hourly_funding = float(ctx.get("funding", 0.0))
@@ -81,9 +86,9 @@ def get_crypto_247_vector():
                     oracle_px = float(ctx.get("oraclePx", 0.0))
                     oi = float(ctx.get("openInterest", 0.0))
                     btc_oi_mil = round((oi * oracle_px) / 1_000_000, 1)
+                    hl_fallback = False
     except Exception as e:
         print(f"[!] Hyperliquid fetch error: {e}")
-        is_fallback = True
 
     # 2. Deribit Real DVOL Index Endpoint
     try:
@@ -91,11 +96,11 @@ def get_crypto_247_vector():
         dvol_data = fetch_json(deribit_url, timeout=6)
         if dvol_data and "result" in dvol_data and "index_price" in dvol_data["result"]:
             dvol_val = round(float(dvol_data["result"]["index_price"]), 1)
-        else:
-            is_fallback = True
+            dvol_fallback = False
     except Exception as e:
         print(f"[!] Deribit DVOL fetch error: {e}")
-        is_fallback = True
+
+    is_fallback = hl_fallback or dvol_fallback
 
     funding_stress = 15
     if btc_funding_apr > 25.0:
@@ -111,15 +116,15 @@ def get_crypto_247_vector():
     return crypto_score, btc_funding_apr, btc_oi_mil, dvol_val, is_fallback
 
 # ==============================================================================
-# SÄULE 3: FINRA SHORT VOLUME (SPY)
+# SÄULE 3: SHORT VOLUME (FINRA SPY)
 # ==============================================================================
-def get_finra_darkpool_short():
+def get_finra_short_volume():
     today = datetime.utcnow()
     for i in range(0, 6):
         date_str = (today - timedelta(days=i)).strftime("%Y%m%d")
         url = f"https://cdn.finra.org/equity/regsho/daily/CNMSshvol{date_str}.txt"
         try:
-            req = urllib.request.Request(url, headers=HEADERS)
+            req = urllib.request.Request(url, headers=DEFAULT_HEADERS)
             with urllib.request.urlopen(req, timeout=8) as resp:
                 for raw_line in resp:
                     line = raw_line.decode('utf-8', errors='ignore')
@@ -140,10 +145,11 @@ def get_finra_darkpool_short():
 # SÄULE 4: DOLLAR LIQUIDITY (TGA & NY FED SWAPS)
 # ==============================================================================
 def get_liquidity_plumbing():
+    # 1. TGA Closing Balance
     tga_url = "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/dts/dts_table_1?filter=account_type:eq:Treasury%20General%20Account%20(TGA)%20Closing%20Balance&sort=-record_date&page[size]=10"
     data = fetch_json(tga_url)
     tga_bal, tga_change, tga_score = 850.0, 0.0, 15
-    is_fallback = False
+    tga_fallback = True
     
     if data and "data" in data and len(data["data"]) > 0:
         tga_rows = []
@@ -162,56 +168,71 @@ def get_liquidity_plumbing():
             tga_change = (latest - prev) / 1000.0
             tga_bal = latest / 1000.0
             tga_score = min(100, int(abs(tga_change) * 1.5))
-        else:
-            is_fallback = True
-    else:
-        is_fallback = True
+            tga_fallback = False
 
+    # 2. NY Fed Swaps (Prüft robust alle typischen NY Fed Response-Schlüssel)
     swaps_url = "https://markets.newyorkfed.org/api/fxs/all/latest.json"
     swap_data = fetch_json(swaps_url)
     swap_volume_b = 0.0
-    if swap_data and "data" in swap_data:
-        for deal in swap_data.get("data", []):
-            amt = deal.get("amount", 0)
-            swap_volume_b += float(amt) / 1000000000.0
-    else:
-        is_fallback = True
+    swaps_fallback = True
+    
+    if isinstance(swap_data, dict):
+        deals = None
+        for key in ("fxSwaps", "operations", "data", "results"):
+            if key in swap_data and isinstance(swap_data[key], list):
+                deals = swap_data[key]
+                break
+                
+        if deals is not None:
+            swaps_fallback = False
+            for deal in deals:
+                amt = deal.get("amount", 0)
+                try:
+                    swap_volume_b += float(amt) / 1_000_000_000.0
+                except (ValueError, TypeError):
+                    pass
             
+    is_fallback = tga_fallback or swaps_fallback
     swap_score = min(100, int(swap_volume_b * 10))
     composite = int((tga_score * 0.7) + (swap_score * 0.3))
     return composite, round(tga_bal, 1), round(tga_change, 1), round(swap_volume_b, 2), is_fallback
 
 # ==============================================================================
-# SÄULE 5: CREDIT STRESS (SEC 8-K ITEM 2.04)
+# SÄULE 5: CREDIT STRESS (SEC 8-K ITEM 2.04 - MIT dateRange=custom)
 # ==============================================================================
 def get_credit_distress_vector():
     today = datetime.utcnow()
     two_weeks_ago = (today - timedelta(days=14)).strftime("%Y-%m-%d")
     today_str = today.strftime("%Y-%m-%d")
-    is_fallback = False
     
-    sec_url = f"https://efts.sec.gov/LATEST/search-index?q=%22Item+2.04%22&forms=8-K&startdt={two_weeks_ago}&enddt={today_str}"
-    sec_data = fetch_json(sec_url, timeout=6)
-    filing_count = 0
-    if sec_data and "hits" in sec_data and "total" in sec_data["hits"]:
-        filing_count = sec_data["hits"]["total"].get("value", 0)
-    else:
-        filing_count = 11
-        is_fallback = True
+    # dateRange=custom ist zwingend erforderlich, damit startdt/enddt greifen!
+    sec_url = f"https://efts.sec.gov/LATEST/search-index?q=%22Item+2.04%22&forms=8-K&dateRange=custom&startdt={two_weeks_ago}&enddt={today_str}"
+    sec_data = fetch_json(sec_url, timeout=8, headers=SEC_HEADERS)
+    filing_count = 11
+    is_fallback = True
+    
+    if sec_data and isinstance(sec_data, dict) and "hits" in sec_data:
+        total = sec_data["hits"].get("total", {})
+        if isinstance(total, dict) and "value" in total:
+            filing_count = total["value"]
+            is_fallback = False
+        elif isinstance(total, int):
+            filing_count = total
+            is_fallback = False
         
     credit_score = min(100, max(5, int(filing_count * 4.0)))
     return credit_score, filing_count, is_fallback
 
 # ==============================================================================
-# SÄULE 6: ODDS AND ENDS (WIKIPEDIA & CBP LAREDO)
+# SÄULE 6: ODDS AND ENDS (WIKIPEDIA 6% & CBP LAREDO 4%)
 # ==============================================================================
 def get_cognitive_and_physical():
     articles = ["Bank_run", "Credit_default_swap", "Circuit_breaker_(stock_market)", "Force_majeure", "Bail-in", "Insolvency"]
     today = datetime.utcnow()
     end_date = (today - timedelta(days=1)).strftime("%Y%m%d")
     start_date = (today - timedelta(days=25)).strftime("%Y%m%d")
-    is_fallback = False
     
+    wiki_fallback = True
     anomalies = []
     for art in articles:
         url = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia.org/all-access/user/{art}/daily/{start_date}/{end_date}"
@@ -224,15 +245,17 @@ def get_cognitive_and_physical():
             std_base = math.sqrt(sum((x - avg_base) ** 2 for x in baseline) / len(baseline)) or 1
             z_score = (sum(recent)/len(recent) - avg_base) / std_base
             anomalies.append(max(0.0, z_score))
-        else:
-            is_fallback = True
+            wiki_fallback = False
             
     avg_z = sum(anomalies) / len(anomalies) if anomalies else 0.0
     wiki_score = min(100, int(avg_z * 25))
 
+    # CBP Laredo Wait Times
     cbp_url = "https://bwt.cbp.gov/api/waittimes"
     cbp_data = fetch_json(cbp_url, timeout=8)
     laredo_wait = 20
+    cbp_fallback = True
+    
     if cbp_data and isinstance(cbp_data, list):
         delays = []
         for port in cbp_data:
@@ -244,29 +267,33 @@ def get_cognitive_and_physical():
                     delays.append(int(delay))
         if delays:
             laredo_wait = max(delays)
-    else:
-        is_fallback = True
+            cbp_fallback = False
             
+    is_fallback = wiki_fallback or cbp_fallback
     phys_score = min(100, max(0, int((laredo_wait - 15) * (100 / 105))))
     composite = int((wiki_score * 0.6) + (phys_score * 0.4))
     return composite, round(avg_z, 2), laredo_wait, is_fallback
 
 # ==============================================================================
-# TACTICAL POSTURE GENERATOR
+# TACTICAL POSTURE GENERATOR (CIRCUIT BREAKER SAFETY GUARD)
 # ==============================================================================
-def generate_tactical_posture(composite, vix, finra_svr, swaps_vol, crypto_score, btc_funding):
+def generate_tactical_posture(composite, vix, finra_svr, swaps_vol, crypto_score, btc_funding, fallback_flags):
     posture = {}
     
     # 1. Grid Bots Directive
     if crypto_score > 65 or composite >= 65:
         posture["grid_bots"] = {"status": "PAUSED", "color": "#ff0033", "action": f"Pause new grids. Dislocation or leverage risk elevated (Crypto score: {crypto_score})."}
     elif composite < 35 and vix < 20 and crypto_score < 40:
-        posture["grid_bots"] = {"status": "ACTIVE", "color": "#00ff66", "action": "Calm conditions. Standard grid parameters."}
+        # SICHERHEITS-SCHUTZ: Nie ACTIVE melden, wenn Daten auf Fallbacks basieren!
+        if any(fallback_flags.values()):
+            posture["grid_bots"] = {"status": "CAUTION", "color": "#ffcc00", "action": "Widen grid bands by 15-25%. Upstream fallback data active on one or more feeds."}
+        else:
+            posture["grid_bots"] = {"status": "ACTIVE", "color": "#00ff66", "action": "Calm conditions. Standard grid parameters."}
     else:
         posture["grid_bots"] = {"status": "CAUTION", "color": "#ffcc00", "action": "Widen grid bands by 15-25%. Reduce leverage / lot sizes."}
         
     # 2. Dip-Buying (DCA)
-    if composite < 45 and finra_svr < 55.0 and crypto_score < 50:
+    if composite < 45 and finra_svr < 55.0 and crypto_score < 50 and not any(fallback_flags.values()):
         posture["dip_buying"] = {"status": "FAVORABLE", "color": "#00ff66", "action": "Orderly pullbacks. Liquidity supports absorption."}
     else:
         posture["dip_buying"] = {"status": "DEFENSIVE", "color": "#ff6600", "action": "Support lines fragile. Do not catch falling knives."}
@@ -302,7 +329,7 @@ def generate_tactical_posture(composite, vix, finra_svr, swaps_vol, crypto_score
 def calculate_systemic_weather():
     mkt_score, vix_val, move_val, fb_mkt = get_market_volatility()
     crypto_score, btc_funding, btc_oi, dvol_val, fb_crypto = get_crypto_247_vector()
-    finra_score, finra_svr, finra_date, fb_finra = get_finra_darkpool_short()
+    finra_score, finra_svr, finra_date, fb_finra = get_finra_short_volume()
     liq_score, tga_bal, tga_flow, swap_vol, fb_liq = get_liquidity_plumbing()
     cred_score, sec_filings, fb_cred = get_credit_distress_vector()
     cog_score, wiki_z, laredo_wait, fb_cog = get_cognitive_and_physical()
@@ -337,16 +364,16 @@ def calculate_systemic_weather():
         desc = "High alert: widespread dislocation across multiple operational feeds."
         color = "#ff0033"
         
-    tactical = generate_tactical_posture(composite, vix_val, finra_svr, swap_vol, crypto_score, btc_funding)
-    
     fallback_flags = {
-        "market_implied": fb_mkt,
-        "crypto_247": fb_crypto,
-        "dark_pool_finra": fb_finra,
-        "liquidity_plumbing": fb_liq,
-        "credit_statutory": fb_cred,
+        "market_volatility": fb_mkt,
+        "crypto_leverage": fb_crypto,
+        "short_volume": fb_finra,
+        "dollar_liquidity": fb_liq,
+        "credit_stress": fb_cred,
         "odds_and_ends": fb_cog
     }
+    
+    tactical = generate_tactical_posture(composite, vix_val, finra_svr, swap_vol, crypto_score, btc_funding, fallback_flags)
     
     return {
         "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
@@ -360,9 +387,11 @@ def calculate_systemic_weather():
         "pillars": {
             "market_implied": {"score": mkt_score, "vix": vix_val, "move_index": move_val, "fallback": fb_mkt},
             "crypto_247": {"score": crypto_score, "btc_funding_apr": btc_funding, "btc_oi_mil": btc_oi, "dvol_index": dvol_val, "fallback": fb_crypto},
-            "dark_pool_finra": {"score": finra_score, "spy_short_volume_ratio": finra_svr, "report_date": finra_date, "fallback": fb_finra},
+            "short_volume": {"score": finra_score, "spy_short_volume_ratio": finra_svr, "report_date": finra_date, "fallback": fb_finra},
+            "dark_pool_finra": {"score": finra_score, "spy_short_volume_ratio": finra_svr, "report_date": finra_date, "fallback": fb_finra}, # Kompatibilität
             "liquidity_plumbing": {"score": liq_score, "tga_billions": tga_bal, "tga_5d_flow": tga_flow, "swaps_billions": swap_vol, "fallback": fb_liq},
             "credit_statutory": {"score": cred_score, "sec_8k_filings": sec_filings, "fallback": fb_cred},
+            "cognitive_physical": {"score": cog_score, "wiki_z": wiki_z, "border_wait_m": laredo_wait, "fallback": fb_cog}, # Key beibehalten!
             "odds_and_ends": {"score": cog_score, "wiki_z": wiki_z, "border_wait_m": laredo_wait, "fallback": fb_cog}
         }
     }
@@ -378,14 +407,13 @@ def export_files(data):
     with open("weather.json", "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
-    # Helper für Fallback-Tagging im Terminal
     fb = lambda key: " [fallback]" if p[key].get("fallback") else ""
     funding_str = f"{p['crypto_247']['btc_funding_apr']:+.1f}%"
 
     term = f"""
 ======================================================================
  OPEN MARKET WEATHER OBSERVATORY // HYBRID MACRO & CRYPTO
- {data['timestamp']} // STANDALONE HEURISTIC // HOURLY REFRESH
+ {data['timestamp']} // STANDALONE HEURISTIC // PERIODIC RUN
 ======================================================================
 
  OVERALL STATUS : {data['status']} [Score: {data['composite_score']}/100]
@@ -399,12 +427,12 @@ def export_files(data):
  [*] COLLATERAL     : {t['collateral']['status']} -> {t['collateral']['action']}
 
  --- 6 OPERATIONAL PILLARS ---
- [1] Market Volatility     : Score {p['market_implied']['score']}/100 (VIX: {p['market_implied']['vix']} | MOVE: {p['market_implied']['move_index']}){fb('market_implied')}
- [2] Crypto Leverage       : Score {p['crypto_247']['score']}/100 (Funding: {funding_str} APR | DVOL: {p['crypto_247']['dvol_index']}%){fb('crypto_247')}
- [3] Dark Pool Short Share : Score {p['dark_pool_finra']['score']}/100 (SPY Short: {p['dark_pool_finra']['spy_short_volume_ratio']}% | Date: {p['dark_pool_finra']['report_date']}){fb('dark_pool_finra')}
- [4] Dollar Liquidity      : Score {p['liquidity_plumbing']['score']}/100 (TGA: ${p['liquidity_plumbing']['tga_billions']}B | Swaps: ${p['liquidity_plumbing']['swaps_billions']}B){fb('liquidity_plumbing')}
- [5] Credit Stress         : Score {p['credit_statutory']['score']}/100 (SEC 8-K Accelerations: {p['credit_statutory']['sec_8k_filings']}){fb('credit_statutory')}
- [6] Odds and Ends         : Score {p['odds_and_ends']['score']}/100 (Analyst Z: +{p['odds_and_ends']['wiki_z']}σ | Border: {p['odds_and_ends']['border_wait_m']}m){fb('odds_and_ends')}
+ [1] Market Volatility : Score {p['market_implied']['score']}/100 (VIX: {p['market_implied']['vix']} | MOVE: {p['market_implied']['move_index']}){fb('market_implied')}
+ [2] Crypto Leverage   : Score {p['crypto_247']['score']}/100 (Funding: {funding_str} APR | DVOL: {p['crypto_247']['dvol_index']}%){fb('crypto_247')}
+ [3] Short Volume      : Score {p['short_volume']['score']}/100 (SPY Short: {p['short_volume']['spy_short_volume_ratio']}% | Date: {p['short_volume']['report_date']}){fb('short_volume')}
+ [4] Dollar Liquidity  : Score {p['liquidity_plumbing']['score']}/100 (TGA: ${p['liquidity_plumbing']['tga_billions']}B | Swaps: ${p['liquidity_plumbing']['swaps_billions']}B){fb('liquidity_plumbing')}
+ [5] Credit Stress     : Score {p['credit_statutory']['score']}/100 (SEC 8-K Accelerations: {p['credit_statutory']['sec_8k_filings']}){fb('credit_statutory')}
+ [6] Odds and Ends     : Score {p['cognitive_physical']['score']}/100 (Analyst Z: +{p['cognitive_physical']['wiki_z']}σ | Border: {p['cognitive_physical']['border_wait_m']}m){fb('cognitive_physical')}
 
  API: curl -sL {base_url}/weather.json
 ======================================================================
@@ -426,7 +454,6 @@ def export_files(data):
     with open("badge.svg", "w", encoding="utf-8") as f:
         f.write(badge)
 
-    # HTML
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -522,7 +549,7 @@ def export_files(data):
         a:hover {{ text-decoration: underline; }}
         .footer {{ margin-top: 2.5rem; border-top: 1px dashed #2d3748; padding-top: 1rem; font-size: 0.8rem; color: #718096; }}
         .score-pill {{ font-weight: bold; padding: 2px 8px; border-radius: 3px; background: #1a202c; white-space: nowrap; }}
-        .tag-fallback {{ color: #f59e0b; font-size: 0.75rem; margin-left: 4px; }}
+        .tag-fallback {{ color: #f59e0b; font-size: 0.75rem; margin-left: 6px; font-weight: normal; }}
         code {{ background: #1a202c; padding: 2px 6px; border-radius: 3px; color: #e2e8f0; }}
 
         @media (max-width: 640px) {{
@@ -546,7 +573,7 @@ def export_files(data):
 <body>
     <div class="header">
         <strong>OPEN MARKET WEATHER OBSERVATORY</strong><br>
-        <span class="badge-sub">TIMESTAMP: {data['timestamp']} // HOURLY REFRESH // HEURISTIC MATRIX</span>
+        <span class="badge-sub">TIMESTAMP: {data['timestamp']} // PERIODIC EDGE RUN // HEURISTIC MATRIX</span>
         <div class="header-links">
             <a href="weather.json">[Raw JSON API]</a> &nbsp;|&nbsp; 
             <a href="weather.txt">[Plaintext for cURL]</a> &nbsp;|&nbsp; 
@@ -616,8 +643,8 @@ def export_files(data):
                 <tr>
                     <td><strong>3. Short Volume</strong></td>
                     <td>FINRA Reg SHO Daily Flat File (SPY)</td>
-                    <td>Short Ratio: {p['dark_pool_finra']['spy_short_volume_ratio']}% ({p['dark_pool_finra']['report_date']}){'<span class="tag-fallback">[fallback]</span>' if p['dark_pool_finra']['fallback'] else ''}</td>
-                    <td><span class="score-pill">{p['dark_pool_finra']['score']}/100</span></td>
+                    <td>Short Ratio: {p['short_volume']['spy_short_volume_ratio']}% ({p['short_volume']['report_date']}){'<span class="tag-fallback">[fallback]</span>' if p['short_volume']['fallback'] else ''}</td>
+                    <td><span class="score-pill">{p['short_volume']['score']}/100</span></td>
                 </tr>
                 <tr>
                     <td><strong>4. Dollar Liquidity</strong></td>
@@ -634,8 +661,8 @@ def export_files(data):
                 <tr>
                     <td><strong>6. Odds and Ends</strong></td>
                     <td>Wikimedia Crisis Traffic (6%) + CBP Laredo Freight (4%)</td>
-                    <td>Analyst Z: +{p['odds_and_ends']['wiki_z']}σ | Border: {p['odds_and_ends']['border_wait_m']}m{'<span class="tag-fallback">[fallback]</span>' if p['odds_and_ends']['fallback'] else ''}</td>
-                    <td><span class="score-pill">{p['odds_and_ends']['score']}/100</span></td>
+                    <td>Analyst Z: +{p['cognitive_physical']['wiki_z']}σ | Border: {p['cognitive_physical']['border_wait_m']}m{'<span class="tag-fallback">[fallback]</span>' if p['cognitive_physical']['fallback'] else ''}</td>
+                    <td><span class="score-pill">{p['cognitive_physical']['score']}/100</span></td>
                 </tr>
             </tbody>
         </table>
@@ -653,7 +680,7 @@ def export_files(data):
         f.write(html)
 
 if __name__ == "__main__":
-    print("[*] Running Market Weather Engine v3.1...")
+    print("[*] Running Market Weather Engine v3.2...")
     w = calculate_systemic_weather()
     export_files(w)
     print(f"[+] Complete: Score is {w['composite_score']}/100 -> {w['status']}")
