@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-11-10 18:00 UTC",
+  "timestamp": "2026-11-10 18:30 UTC",
   "symbol": "\u2600\ufe0f",
-  "composite_score": 19,
+  "composite_score": 20,
   "status": "CLEAR SKIES",
   "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
   "color": "#00ff66",
@@ -27,7 +27,7 @@
     "crypto_perps": {
       "status": "NOMINAL",
       "color": "#00ff66",
-      "action": "Moderate derivatives leverage (BTC funding: +6.5% APR)."
+      "action": "Moderate derivatives leverage (BTC funding: +10.2% APR)."
     },
     "dark_pool": {
       "status": "NOMINAL",
@@ -43,15 +43,15 @@
   "pillars": {
     "market_implied": {
       "score": 34,
-      "vix": 21.16,
-      "move_index": 93.67,
+      "vix": 20.84,
+      "move_index": 94.22,
       "fallback": false
     },
     "crypto_247": {
-      "score": 6,
-      "btc_funding_apr": 6.5,
-      "btc_oi_mil": 3083.5,
-      "dvol_index": 40.3,
+      "score": 9,
+      "btc_funding_apr": 10.2,
+      "btc_oi_mil": 3071.6,
+      "dvol_index": 40.2,
       "fallback": false
     },
     "short_volume": {
