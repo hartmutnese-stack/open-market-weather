@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-11-10 22:00 UTC",
-  "symbol": "\u2600\ufe0f",
-  "composite_score": 19,
-  "status": "CLEAR SKIES",
-  "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
-  "color": "#00ff66",
+  "timestamp": "2026-11-10 22:30 UTC",
+  "symbol": "\u26c5",
+  "composite_score": 31,
+  "status": "SCATTERED CLOUDS",
+  "desc": "Operational noise within standard ranges. No immediate systemic fracture.",
+  "color": "#ffcc00",
   "fallback_flags": {
     "market_volatility": false,
     "crypto_leverage": false,
@@ -30,9 +30,9 @@
       "action": "Moderate derivatives leverage (BTC funding: +11.0% APR)."
     },
     "dark_pool": {
-      "status": "NOMINAL",
-      "color": "#00ff66",
-      "action": "Normal short volume share on SPY (46.4%)."
+      "status": "ELEVATED",
+      "color": "#ffcc00",
+      "action": "Elevated short volume share on SPY (57.9%)."
     },
     "collateral": {
       "status": "STABLE",
@@ -50,20 +50,20 @@
     "crypto_247": {
       "score": 9,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 3026.1,
-      "dvol_index": 39.7,
+      "btc_oi_mil": 3004.4,
+      "dvol_index": 39.9,
       "fallback": false
     },
     "short_volume": {
-      "score": 21,
-      "spy_short_volume_ratio": 46.4,
-      "report_date": "20261109",
+      "score": 79,
+      "spy_short_volume_ratio": 57.9,
+      "report_date": "20261110",
       "fallback": false
     },
     "dark_pool_finra": {
-      "score": 21,
-      "spy_short_volume_ratio": 46.4,
-      "report_date": "20261109",
+      "score": 79,
+      "spy_short_volume_ratio": 57.9,
+      "report_date": "20261110",
       "fallback": false
     },
     "liquidity_plumbing": {
@@ -74,8 +74,8 @@
       "fallback": true
     },
     "credit_statutory": {
-      "score": 44,
-      "sec_8k_filings": 11,
+      "score": 64,
+      "sec_8k_filings": 16,
       "fallback": false
     },
     "cognitive_physical": {
