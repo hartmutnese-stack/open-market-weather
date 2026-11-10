@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>Market Weather (19/100)</title>
-    <meta name="description" content="Decentralized systemic risk barometer tracking TradFi macro plumbing and 24/7 crypto leverage stress.">
+    <title>Market Weather (18/100)</title>
+    <meta name="description" content="A weather report for the markets based on public macro and crypto data feeds.">
     <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='.9em'%20font-size='90'%3E☀️%3C/text%3E%3C/svg%3E">
     <style>
         * { box-sizing: border-box; }
@@ -93,6 +93,7 @@
         a:hover { text-decoration: underline; }
         .footer { margin-top: 2.5rem; border-top: 1px dashed #2d3748; padding-top: 1rem; font-size: 0.8rem; color: #718096; }
         .score-pill { font-weight: bold; padding: 2px 8px; border-radius: 3px; background: #1a202c; white-space: nowrap; }
+        .tag-fallback { color: #f59e0b; font-size: 0.75rem; margin-left: 4px; }
         code { background: #1a202c; padding: 2px 6px; border-radius: 3px; color: #e2e8f0; }
 
         @media (max-width: 640px) {
@@ -115,8 +116,8 @@
 </head>
 <body>
     <div class="header">
-        <strong>OPEN MARKET WEATHER OBSERVATORY // HYBRID MATRIX</strong><br>
-        <span class="badge-sub">TIMESTAMP: 2026-11-10 13:30 UTC // ZERO COMMERCIAL BIAS // 24/7 EXHAUST FEEDS</span>
+        <strong>OPEN MARKET WEATHER OBSERVATORY</strong><br>
+        <span class="badge-sub">TIMESTAMP: 2026-11-10 13:44 UTC // HOURLY REFRESH // HEURISTIC MATRIX</span>
         <div class="header-links">
             <a href="weather.json">[Raw JSON API]</a> &nbsp;|&nbsp; 
             <a href="weather.txt">[Plaintext for cURL]</a> &nbsp;|&nbsp; 
@@ -126,12 +127,12 @@
 
     <div class="status-box">
         <span class="status-symbol">☀️</span>
-        <div class="status-title">CLEAR SKIES (SCORE: 19/100)</div>
-        <div class="status-desc">Systemic friction minimal. Normal market regime, macro & crypto conduits undisturbed.</div>
+        <div class="status-title">CLEAR SKIES (SCORE: 18/100)</div>
+        <div class="status-desc">Systemic friction minimal. Normal market conditions across macro and crypto feeds.</div>
     </div>
 
     <div class="posture-card">
-        <div class="posture-title">🎯 Tactical Posture // Operational Directives</div>
+        <div class="posture-title">Tactical Posture // Suggestions for Trading Bots</div>
         <div class="posture-item">
             <span class="posture-label">GRID BOTS</span>
             <span class="posture-status" style="color: #ffcc00">CAUTION</span>
@@ -145,66 +146,66 @@
         <div class="posture-item">
             <span class="posture-label">CRYPTO PERPS</span>
             <span class="posture-status" style="color: #00ff66">NOMINAL</span>
-            <span class="posture-action">Healthy derivatives leverage (BTC Funding: +11.0% APR).</span>
+            <span class="posture-action">Moderate derivatives leverage (BTC funding: +11.0% APR).</span>
         </div>
         <div class="posture-item">
-            <span class="posture-label">DARK POOL</span>
+            <span class="posture-label">SHORT VOLUME</span>
             <span class="posture-status" style="color: #00ff66">NOMINAL</span>
-            <span class="posture-action">Balanced flow (46.4% SVR on SPY).</span>
+            <span class="posture-action">Normal short volume share on SPY (46.4%).</span>
         </div>
         <div class="posture-item">
             <span class="posture-label">COLLATERAL</span>
             <span class="posture-status" style="color: #00ff66">STABLE</span>
-            <span class="posture-action">No central bank emergency swap usage. Conduits clear.</span>
+            <span class="posture-action">No central bank emergency swap usage.</span>
         </div>
     </div>
 
-    <h3>THE 6 OPERATIONAL PILLARS</h3>
+    <h3>THE 6 PILLARS</h3>
     <div class="table-container">
         <table class="table">
             <thead>
                 <tr>
                     <th>Pillar</th>
-                    <th>Underlying Exhaust Feed</th>
+                    <th>Underlying Feed</th>
                     <th>Live Values</th>
-                    <th>Stress Score</th>
+                    <th>Friction Score</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td><strong>1. TradFi Derivatives</strong></td>
+                    <td><strong>1. Market Volatility</strong></td>
                     <td>S&P 500 VIX + Treasury MOVE Index</td>
-                    <td>VIX: 20.25 | MOVE: 85.98</td>
-                    <td><span class="score-pill">27/100</span></td>
+                    <td>VIX: 20.03 | MOVE: 85.98</td>
+                    <td><span class="score-pill">26/100</span></td>
                 </tr>
                 <tr>
-                    <td><strong>2. Crypto 24/7 Leverage</strong></td>
-                    <td>Hyperliquid BTC Funding + Deribit DVOL</td>
-                    <td>Funding: +11.0% APR | DVOL: 39.1%</td>
+                    <td><strong>2. Crypto Leverage</strong></td>
+                    <td>Hyperliquid BTC Funding + Deribit DVOL Index</td>
+                    <td>Funding: +11.0% APR | DVOL: 39.5%</td>
                     <td><span class="score-pill">9/100</span></td>
                 </tr>
                 <tr>
-                    <td><strong>3. Dark Pool Flow</strong></td>
-                    <td>FINRA Reg SHO Daily Short Volume (SPY)</td>
+                    <td><strong>3. Short Volume</strong></td>
+                    <td>FINRA Reg SHO Daily Flat File (SPY)</td>
                     <td>Short Ratio: 46.4% (20261109)</td>
                     <td><span class="score-pill">21/100</span></td>
                 </tr>
                 <tr>
-                    <td><strong>4. Dollar Plumbing</strong></td>
+                    <td><strong>4. Dollar Liquidity</strong></td>
                     <td>U.S. TGA Cash + NY Fed Central Bank Swaps</td>
-                    <td>TGA: $850.0B | Swaps: $0.0B</td>
+                    <td>TGA: $850.0B | Swaps: $0.0B<span class="tag-fallback">[fallback]</span></td>
                     <td><span class="score-pill">10/100</span></td>
                 </tr>
                 <tr>
-                    <td><strong>5. Statutory Credit Risk</strong></td>
+                    <td><strong>5. Credit Stress</strong></td>
                     <td>SEC 8-K Form (Item 2.04 Acceleration - 14D)</td>
                     <td>Active Filings: 11</td>
                     <td><span class="score-pill">44/100</span></td>
                 </tr>
                 <tr>
-                    <td><strong>6. Cognitive & Logistics</strong></td>
-                    <td>Wikimedia Desk Traffic + CBP Laredo Freight</td>
-                    <td>Analyst Z: +0.0σ | Border: 20m</td>
+                    <td><strong>6. Odds and Ends</strong></td>
+                    <td>Wikimedia Crisis Traffic (6%) + CBP Laredo Freight (4%)</td>
+                    <td>Analyst Z: +0.0σ | Border: 20m<span class="tag-fallback">[fallback]</span></td>
                     <td><span class="score-pill">1/100</span></td>
                 </tr>
             </tbody>
@@ -212,7 +213,7 @@
     </div>
 
     <div class="footer">
-        Decentralized public utility. Built on Hyperliquid perps, Deribit volatility, FINRA off-exchange flows, and statutory filings.<br>
+        Open market metrics. Built with Python stdlib on Cloudflare and GitHub Actions. No financial advice.<br>
         CLI Access: <code>curl -sL https://open-market-weather.hartmut-nese.workers.dev/weather.txt</code><br>
         Bot Embed: <code>&lt;img src="https://open-market-weather.hartmut-nese.workers.dev/badge.svg"&gt;</code>
     </div>

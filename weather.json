@@ -1,10 +1,18 @@
 {
-  "timestamp": "2026-11-10 13:30 UTC",
+  "timestamp": "2026-11-10 13:44 UTC",
   "symbol": "\u2600\ufe0f",
-  "composite_score": 19,
+  "composite_score": 18,
   "status": "CLEAR SKIES",
-  "desc": "Systemic friction minimal. Normal market regime, macro & crypto conduits undisturbed.",
+  "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
   "color": "#00ff66",
+  "fallback_flags": {
+    "market_implied": false,
+    "crypto_247": false,
+    "dark_pool_finra": false,
+    "liquidity_plumbing": true,
+    "credit_statutory": false,
+    "odds_and_ends": true
+  },
   "tactical_posture": {
     "grid_bots": {
       "status": "CAUTION",
@@ -19,50 +27,56 @@
     "crypto_perps": {
       "status": "NOMINAL",
       "color": "#00ff66",
-      "action": "Healthy derivatives leverage (BTC Funding: +11.0% APR)."
+      "action": "Moderate derivatives leverage (BTC funding: +11.0% APR)."
     },
     "dark_pool": {
       "status": "NOMINAL",
       "color": "#00ff66",
-      "action": "Balanced flow (46.4% SVR on SPY)."
+      "action": "Normal short volume share on SPY (46.4%)."
     },
     "collateral": {
       "status": "STABLE",
       "color": "#00ff66",
-      "action": "No central bank emergency swap usage. Conduits clear."
+      "action": "No central bank emergency swap usage."
     }
   },
   "pillars": {
     "market_implied": {
-      "score": 27,
-      "vix": 20.25,
-      "move_index": 85.98
+      "score": 26,
+      "vix": 20.03,
+      "move_index": 85.98,
+      "fallback": false
     },
     "crypto_247": {
       "score": 9,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 3053.0,
-      "dvol_index": 39.1
+      "btc_oi_mil": 3100.2,
+      "dvol_index": 39.5,
+      "fallback": false
     },
     "dark_pool_finra": {
       "score": 21,
       "spy_short_volume_ratio": 46.4,
-      "report_date": "20261109"
+      "report_date": "20261109",
+      "fallback": false
     },
     "liquidity_plumbing": {
       "score": 10,
       "tga_billions": 850.0,
       "tga_5d_flow": 0.0,
-      "swaps_billions": 0.0
+      "swaps_billions": 0.0,
+      "fallback": true
     },
     "credit_statutory": {
       "score": 44,
-      "sec_8k_filings": 11
+      "sec_8k_filings": 11,
+      "fallback": false
     },
-    "cognitive_physical": {
+    "odds_and_ends": {
       "score": 1,
       "wiki_z": 0.0,
-      "border_wait_m": 20
+      "border_wait_m": 20,
+      "fallback": true
     }
   }
 }
