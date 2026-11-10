@@ -1,8 +1,8 @@
 # open-market-weather
 
-A weather report for the markets. One Python script pulls a handful of public data feeds, squeezes them into a single score between 0 and 100 and shows it the way a weather app would: ☀️ when things look calm, ⛈️ when they don't.
+A weather report for the markets. One Python script pulls a handful of public data feeds, squeezes them into a single score between 0 and 100, and displays it the way a weather app would: ☀️ when things look calm, ⛈️ when they don't.
 
-I built it for my own Hyperliquid grid bot. Before the bot keeps buying dips, it can check whether something odd is going on in the wider market. It's a rough heuristic: the weights are my guesses and I haven't backtested any of it. Please don't treat it as a trading signal.
+I built it for my own grid bot on Hyperliquid. Before it keeps deploying capital into a dropping market, it checks whether something odd is brewing in the plumbing outside of crypto. It's a rough heuristic: the weights are my own estimates and I haven't backtested any of it. Please don't treat it as a trading signal.
 
 - Dashboard: https://open-market-weather.hartmut-nese.workers.dev
 - JSON: https://open-market-weather.hartmut-nese.workers.dev/weather.json
@@ -10,11 +10,11 @@ I built it for my own Hyperliquid grid bot. Before the bot keeps buying dips, it
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-## Why weather?
+## Why a weather report instead of charts?
 
-RSI, moving averages and Bollinger bands are calculated from price, so they only tell me what price has already done. I wanted a few signals from the plumbing around the market instead: how crowded derivatives traders are, how much cash the Treasury is sitting on, whether trucks are stuck at the border. None of these predicts anything on its own. Together they give me a rough feel for whether today is a good day to run a tight grid.
+RSI, moving averages, and Bollinger bands only show what price has already done. When a macro shock starts in traditional markets, crypto order books often react with a delay—meaning a grid bot just sees an attractive dip and buys all the way down. 
 
-I run a perpetual grid bot on Hyperliquid. After watching it blindly catch a cascade of falling knives during a macro-driven selloff that had nothing to do with crypto fundamentals, I realized the bot needed a simple way to read the room before deploying more capital.
+A weather metaphor fits because I don't care about predicting exact prices. Just like checking whether to take an umbrella before leaving the house, I only need to know whether the regime is calm enough for mean-reversion, or whether a squall is coming where resting bids are likely to get run over.
 
 ## What goes into the score
 
@@ -23,21 +23,21 @@ I run a perpetual grid bot on Hyperliquid. After watching it blindly catch a cas
 | Market volatility | 20% | VIX and MOVE | Yahoo Finance (unofficial chart endpoint) |
 | Crypto leverage | 20% | BTC perp funding (annualized) and BTC volatility | Hyperliquid, Deribit |
 | Dark pool shorting | 15% | Short share of SPY volume | FINRA daily Reg SHO files |
-| Dollar liquidity | 20% | Treasury General Account balance and how fast it moves, Fed FX swap usage | US Fiscal Data, NY Fed |
-| Credit stress | 15% | 8-K filings mentioning Item 2.04 (debt acceleration) in the last 14 days | SEC EDGAR full-text search |
-| Odds and ends | 10% | Wikipedia page views for crisis topics (bank run, CDS, circuit breaker, force majeure, bail-in, insolvency) against the previous three weeks, plus truck wait times in Laredo | Wikimedia, CBP |
+| Dollar liquidity | 20% | Treasury General Account balance and its rate of change, Fed FX swap usage | US Fiscal Data, NY Fed |
+| Credit stress | 15% | 8-K filings citing Item 2.04 (debt acceleration) over the past 14 days | SEC EDGAR full-text search |
+| Odds and ends | 10% | Wikipedia page views for crisis topics (bank run, CDS, circuit breaker, force majeure, bail-in, insolvency) against their 3-week baseline, plus truck wait times in Laredo | Wikimedia, CBP |
 
-Each pillar is mapped to 0–100 with plain clamped linear scaling (VIX, for example, runs from 12 to 35), and the six are combined using the weights above. No model, no fitting. Below 25 is sun, below 50 clouds, below 75 rain, above that a storm.
+Each pillar maps to 0–100 via clamped linear scaling (e.g. VIX scales from 12 to 35). The six are combined using the weights above—no machine learning, no curve fitting. Below 25 is clear, below 50 scattered clouds, below 75 rain, and above that a storm warning.
 
-The daily FINRA file is around 15 MB, so the script reads it line by line instead of loading it into memory.
+The daily FINRA file is around 15 MB, so the script streams it line by line instead of loading it into memory.
 
 ## Things to know before you trust it
 
-- **Fallbacks.** If a feed fails, the script prints a warning and substitutes a hard-coded default (VIX 16.5, for example). The output doesn't always show that a value is a stand-in, so check the run log if a number looks suspiciously normal.
-- **Short volume is noisy.** A big part of it is market makers hedging, not institutions betting against the market. I use it as a weak signal.
-- **Treasury cash moves in both directions.** The liquidity score goes up when the balance changes a lot, whether it rises or falls.
-- **Unofficial endpoints.** Yahoo, CBP and SEC full-text search aren't stable APIs and can break without notice.
-- **Different clocks.** Crypto data is live. FINRA and Treasury numbers come once a day, with a lag.
+A lot of FINRA short volume is routine market maker hedging rather than directional speculation, so treat it as a noisy, weak signal. Similarly, Treasury liquidity triggers on volatility in either direction: the score spikes on sharp balance changes whether the government is draining or injecting reserves.
+
+The feeds also run on completely different clocks. Crypto leverage updates continuously, while Treasury and FINRA reports only arrive once a day after market close. Furthermore, the Wikipedia crisis-traffic feed is experimental—page views naturally dip on weekends and fluctuate with academic terms, which is why it only gets a 10% weight alongside the border wait times.
+
+Lastly, several endpoints (Yahoo, CBP, and SEC full-text search) are undocumented public interfaces that can break at any time. When an upstream request fails, the script substitutes a hard-coded fallback (such as VIX 16.5) so the run completes. The dashboard won't explicitly highlight when a number is a fallback, so check the run logs if values look suspiciously stable.
 
 ## Run it
 
@@ -47,17 +47,17 @@ cd open-market-weather
 python3 engine.py
 ```
 
-Python 3.8+, standard library only. It writes `index.html`, `weather.json`, `weather.txt` and `badge.svg` into the current folder. I run it hourly via GitHub Actions and serve the files from Cloudflare, which costs me nothing.
+Requires Python 3.8+ with standard library only. It writes `index.html`, `weather.json`, `weather.txt`, and `badge.svg` into the local directory. I run it hourly via GitHub Actions and serve the static files from Cloudflare Pages, which costs nothing.
 
 ## Using it in a bot
 
-`weather.json` has a `tactical_posture` block with plain-language suggestions. The one for grid bots works like this:
+`weather.json` includes a `tactical_posture` block with plain-language directives. For grid bots, the logic works as follows:
 
-- **PAUSED** if the crypto score is above 65 or the overall score is 65 or higher
-- **ACTIVE** if the overall score is below 35, VIX is below 20 and the crypto score is below 40
+- **PAUSED** if the crypto score is above 65 or the composite score is 65 or higher
+- **ACTIVE** if the composite is below 35, VIX is below 20, and the crypto score is below 40
 - **CAUTION** otherwise
 
-So a calm overall score can still end up on CAUTION, as in this trimmed example:
+A calm composite score can still trigger CAUTION if equity volatility is slightly elevated, as shown in this trimmed payload:
 
 ```json
 {
@@ -74,7 +74,7 @@ So a calm overall score can still end up on CAUTION, as in this trimmed example:
 }
 ```
 
-Here is how my bot reads it. If the request fails, it just carries on. Whether that's right for you is your call:
+Here is a simplified consumer example. If the request fails, the loop ignores it and continues:
 
 ```python
 import aiohttp
@@ -88,16 +88,16 @@ async def check_macro_circuit_breaker():
                 data = await resp.json()
         status = data["tactical_posture"]["grid_bots"]["status"]
         if status == "PAUSED":
-            await cancel_resting_bids_only()      # your own function
+            await cancel_resting_bids_only()      # your own implementation
         elif status == "CAUTION":
-            apply_grid_modifiers(spread_mult=1.25, size_mult=0.6)  # yours too
+            apply_grid_modifiers(spread_mult=1.25, size_mult=0.6)
     except Exception:
         pass
 ```
 
 ## Contributing
 
-If you have a better idea for the scoring curves or the weights, or some historical data to calibrate against, open an issue or a PR. I'd like to hear it.
+If you have ideas for better normalization curves, cleaner weightings, or historical datasets to calibrate against, feel free to open an issue or pull request.
 
 ## License
 
