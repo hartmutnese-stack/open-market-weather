@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-10 19:30 UTC",
+  "timestamp": "2026-11-10 20:00 UTC",
   "symbol": "\u2600\ufe0f",
   "composite_score": 19,
   "status": "CLEAR SKIES",
@@ -17,7 +17,7 @@
     "grid_bots": {
       "status": "CAUTION",
       "color": "#ffcc00",
-      "action": "Widen grid bands by 15-25%. Reduce leverage / lot sizes."
+      "action": "Widen grid bands by 15-25%. Upstream fallback data active on one or more feeds."
     },
     "dip_buying": {
       "status": "DEFENSIVE",
@@ -27,7 +27,7 @@
     "crypto_perps": {
       "status": "NOMINAL",
       "color": "#00ff66",
-      "action": "Moderate derivatives leverage (BTC funding: +9.0% APR)."
+      "action": "Moderate derivatives leverage (BTC funding: +4.8% APR)."
     },
     "dark_pool": {
       "status": "NOMINAL",
@@ -42,15 +42,15 @@
   },
   "pillars": {
     "market_implied": {
-      "score": 31,
-      "vix": 20.18,
+      "score": 30,
+      "vix": 19.93,
       "move_index": 92.21,
       "fallback": false
     },
     "crypto_247": {
-      "score": 7,
-      "btc_funding_apr": 9.0,
-      "btc_oi_mil": 3066.3,
+      "score": 6,
+      "btc_funding_apr": 4.8,
+      "btc_oi_mil": 3065.6,
       "dvol_index": 40.2,
       "fallback": false
     },
