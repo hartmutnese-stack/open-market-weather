@@ -26,7 +26,7 @@ BASE_URL = os.environ.get(
     "OMW_BASE_URL", "https://open-market-weather.hartmut-nese.workers.dev"
 ).rstrip("/")
 CONTACT = os.environ.get(
-    "OMW_CONTACT", "https://github.com/hartmutnese-stack/open-market-weather"
+    "OMW_CONTACT", "admin@marktwetter.org"
 )
 
 DEFAULT_HEADERS = {
