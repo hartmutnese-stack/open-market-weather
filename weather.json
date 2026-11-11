@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-11-11 07:32 UTC",
+  "timestamp": "2026-11-11 07:49 UTC",
   "symbol": "\u26c5",
-  "composite_score": 30,
+  "composite_score": 31,
   "status": "SCATTERED CLOUDS",
   "desc": "Operational noise within standard ranges. No immediate systemic fracture.",
   "color": "#ffcc00",
@@ -9,15 +9,15 @@
     "market_volatility": false,
     "crypto_leverage": false,
     "short_volume": false,
-    "dollar_liquidity": true,
+    "dollar_liquidity": false,
     "credit_stress": false,
-    "odds_and_ends": true
+    "odds_and_ends": false
   },
   "tactical_posture": {
     "grid_bots": {
-      "status": "CAUTION",
-      "color": "#ffcc00",
-      "action": "Widen grid bands by 15-25%. Upstream fallback data active on one or more feeds."
+      "status": "ACTIVE",
+      "color": "#00ff66",
+      "action": "Calm conditions. Standard grid parameters."
     },
     "dip_buying": {
       "status": "DEFENSIVE",
@@ -50,7 +50,7 @@
     "crypto_247": {
       "score": 9,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 2985.2,
+      "btc_oi_mil": 2995.9,
       "dvol_index": 39.4,
       "fallback": false
     },
@@ -67,11 +67,11 @@
       "fallback": false
     },
     "liquidity_plumbing": {
-      "score": 10,
-      "tga_billions": 850.0,
-      "tga_5d_flow": 0.0,
+      "score": 16,
+      "tga_billions": 922.6,
+      "tga_5d_flow": -15.6,
       "swaps_billions": 0.0,
-      "fallback": true
+      "fallback": false
     },
     "credit_statutory": {
       "score": 60,
@@ -82,13 +82,13 @@
       "score": 1,
       "wiki_z": 0.0,
       "border_wait_m": 20,
-      "fallback": true
+      "fallback": false
     },
     "odds_and_ends": {
       "score": 1,
       "wiki_z": 0.0,
       "border_wait_m": 20,
-      "fallback": true
+      "fallback": false
     }
   }
 }
