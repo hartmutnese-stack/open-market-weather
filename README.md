@@ -23,23 +23,23 @@ I'm not trying to predict prices. It's like checking for an umbrella before leav
 | Market volatility | 20% | VIX and MOVE | Yahoo Finance (unofficial chart endpoint) |
 | Crypto leverage | 20% | BTC perp funding (annualized) and BTC implied volatility (DVOL) | Hyperliquid, Deribit |
 | Short volume | 15% | Short share of SPY volume | FINRA daily Reg SHO files |
-| Dollar liquidity | 20% | Treasury General Account balance and how fast it moves, Fed FX swap usage | US Fiscal Data, NY Fed |
-| Credit stress | 15% | 8-K filings citing Item 2.04 (debt acceleration) in the last 14 days | SEC EDGAR full-text search |
+| Dollar liquidity | 20% | Treasury General Account balance and how fast it moves, Fed FX swap line usage | US Fiscal Data, NY Fed |
+| Credit stress | 15% | 8-K filings mentioning Item 2.04 (debt acceleration) in the last 14 days | SEC EDGAR full-text search |
 | Odds and ends | 10% | Wikipedia crisis traffic (6%) + truck wait times in Laredo (4%) | Wikimedia, CBP |
 
-Each pillar maps to 0–100 via clamped linear scaling (VIX, for example, runs from 12 to 35). The six are combined using the weights above. No model, no fitting. Below 25 is clear, below 50 scattered clouds, below 75 rain, above that a storm.
+Each pillar is mapped to 0–100 with simple clamped scaling. VIX, for example, runs from 12 to 35, and BTC funding is only scored by how far it sits from Hyperliquid's baseline of about 11% APR. The six pillars are combined using the weights above. No model, no fitting. Below 25 is clear, below 50 scattered clouds, below 75 rain, above that a storm.
 
 The daily FINRA file is around 15 MB, so the script streams it line by line instead of loading it into memory.
 
 ## Things to know before you trust it
 
+- **Thresholds are guesses.** All the scaling ranges and cutoffs are hand-picked. Short volume and credit stress in particular can sit high in normal times. Every run appends the raw values to `history.csv`, so I can calibrate against real history later.
 - **Short volume is noisy.** Much of it is routine market maker hedging rather than directional bets. I use it as a weak signal.
-- **Treasury cash moves both ways.** The liquidity score spikes on large swings in either direction, whether the government is draining or injecting reserves.
-- **Wikipedia is experimental.** Page views drop on weekends and follow school terms, so I keep its weight small: 60% of a pillar that is worth 10%, which makes 6% of the total.
+- **Treasury cash moves both ways.** The liquidity score goes up on large swings in either direction, whether the government is draining or injecting reserves. Swap line usage below $1B counts as noise.
+- **Wikipedia is experimental.** I compare the last 7 days of page views with the three weeks before, so the weekend dip cancels out. It still follows school terms and news cycles, which is why it only gets 6% of the total (60% of a pillar worth 10%).
 - **Different clocks.** Crypto data is real-time. FINRA and Treasury numbers arrive once a day with a lag.
-- **Thresholds are guesses.** All the scaling ranges and cutoffs are hand-picked. Expect some pillars to sit higher or lower than they should until someone calibrates them against real history.
-- **Unofficial endpoints.** Yahoo, CBP and SEC search are unofficial interfaces that can break without notice.
-- **Fallbacks.** If a feed fails, the script uses a hard-coded default (like VIX 16.5). `weather.json` lists affected pillars under `fallback_flags`, and the dashboard shows `[fallback]` next to their values. The flags don't cover everything yet: the swap lines and the CBP border data aren't flagged on their own, so a stuck `border_wait_m: 20` is worth a look in the run log. The bot directive never says ACTIVE while any flagged feed is on fallback data.
+- **Unofficial endpoints.** Yahoo, CBP and SEC search aren't stable APIs and can break without notice.
+- **Fallbacks.** If a feed fails, the script retries once and then uses a hard-coded default (like VIX 16.5). `weather.json` lists affected pillars under `fallback_flags`, the pillar entries show which feed it was (`tga_fallback`, `cbp_fallback` and so on), and the dashboard shows tags like `[fallback: tga, ny fed]`. While any feed is on fallback data, the grid bot status never reaches ACTIVE. In `history.csv` those values are left empty.
 
 ## Run it
 
@@ -49,22 +49,28 @@ cd open-market-weather
 python3 engine.py
 ```
 
-Python 3.8+, standard library only. It writes `index.html`, `weather.json`, `weather.txt`, and `badge.svg` into the current folder. I run it hourly via GitHub Actions and serve it from Cloudflare for free.
+Python 3.8+, standard library only. It writes `index.html`, `weather.json`, `weather.txt` and `badge.svg` into the current folder and appends a row to `history.csv`. I run it hourly via GitHub Actions and serve the files from Cloudflare for free. `history.csv` only keeps growing if your workflow commits it back to the repo.
 
-If you fork it, put your own contact address into `COMPLIANT_HEADERS` in `engine.py`. SEC EDGAR and Wikimedia ask for one and may block requests without it.
+Two optional environment variables:
+
+- `OMW_CONTACT`: a contact string for the User-Agent sent to SEC EDGAR and Wikimedia, ideally an e-mail address. Both ask for one and may block requests without it. Set this if you fork it.
+- `OMW_BASE_URL`: the public URL of your deployment. The script reads the previous state from there when there is no recent local `weather.json`.
 
 ## Using it in a bot
 
-`weather.json` includes a `tactical_posture` block with plain-language suggestions for trading bots. For grid bots, it works like this:
+`weather.json` includes a `tactical_posture` block with plain-language suggestions for trading bots. For grid bots it works like this:
 
 - **PAUSED** if the crypto score is above 65 or the overall score is 65 or higher.
-- **ACTIVE** if the overall score is below 35, VIX is below 20, the crypto score is below 40, and no flagged feed is on fallback data.
+- **ACTIVE** if the overall score is below 35, VIX is below 20, the crypto score is below 40, and no feed is on fallback data.
 - **CAUTION** for anything in between.
+
+To keep the status from flipping back and forth around a threshold, leaving CAUTION or PAUSED takes clearer readings than entering. Going back to ACTIVE needs an overall score below 28, VIX below 18.5 and a crypto score below 35. PAUSED holds until both the overall and the crypto score are below 58. When this rule is what keeps the status where it is, `hysteresis` is `true`. The script gets the previous status from the local `weather.json` or from the live site, and ignores it if it is older than three hours.
 
 A calm overall score can still land on CAUTION if VIX is above 20 or crypto leverage is elevated, as in this trimmed example:
 
 ```json
 {
+  "version": "3.5",
   "timestamp": "2026-11-09 08:36 UTC",
   "symbol": "☀️",
   "composite_score": 19,
@@ -80,7 +86,8 @@ A calm overall score can still land on CAUTION if VIX is above 20 or crypto leve
   "tactical_posture": {
     "grid_bots": {
       "status": "CAUTION",
-      "action": "Widen grid bands by 15-25%. Reduce leverage / lot sizes."
+      "action": "Widen grid bands by 15-25%. Reduce leverage / lot sizes.",
+      "hysteresis": false
     }
   }
 }
@@ -107,7 +114,7 @@ async def check_macro_circuit_breaker():
         pass
 ```
 
-Near the thresholds the status can flip back and forth (VIX around 20, for example), so don't rebuild your grid on every change.
+The other entries in `tactical_posture` (dip buying, crypto perps, short volume, collateral) are plain status labels. Their `status` values can change between versions, so don't hard-code too much around them.
 
 ## Contributing
 
