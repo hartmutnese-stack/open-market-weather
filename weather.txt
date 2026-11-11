@@ -1,30 +1,30 @@
 
 ======================================================================
  OPEN MARKET WEATHER OBSERVATORY // HYBRID MACRO & CRYPTO // v3.6.3
- 2026-11-11 15:00 UTC // COMPLETE // VALID UNTIL 2026-11-11T17:30:56Z
+ 2026-11-11 15:05 UTC // COMPLETE // VALID UNTIL 2026-11-11T17:35:34Z
 ======================================================================
 
  SCOPE: Experimental rule-based macro regime observer.
  NOTICE: Purely heuristic. Not an investment signal, solicitation, or advice.
 
- OVERALL STATUS : SCATTERED CLOUDS [Score: 25/100]
+ OVERALL STATUS : CLEAR SKIES [Score: 24/100]
  DATA QUALITY   : HIGH [100/100]
- CURRENT REGIME : Operational noise within standard ranges. No immediate systemic fracture.
+ CURRENT REGIME : Systemic friction minimal. Normal market conditions across macro and crypto feeds.
 
  --- OPERATIONAL POSTURE (RULE-BASED REFERENCE HEURISTICS) ---
  [*] GRID BOTS    : ACTIVE -> Calm conditions. Standard grid parameters.
  [*] DIP BUYING   : DEFENSIVE -> Support lines fragile. Do not catch falling knives.
- [*] CRYPTO PERPS : NOMINAL -> Moderate derivatives bias (-0.7% APR).
+ [*] CRYPTO PERPS : NOMINAL -> Moderate derivatives bias (+3.9% APR).
  [*] SHORT VOLUME : ELEVATED -> Elevated short volume share on SPY (57.9%).
  [*] COLLATERAL   : STABLE -> No meaningful central bank swap operations.
 
  --- 6 PILLARS ---
- [1] Market Volatility : Score 28/100 (VIX: 18.68 | MOVE: 92.43)
- [2] Crypto Leverage   : Score 12/100 (Funding: -0.7% APR | DVOL: 39.9%)
+ [1] Market Volatility : Score 28/100 (VIX: 18.66 | MOVE: 92.43)
+ [2] Crypto Leverage   : Score 9/100 (Funding: +3.9% APR | DVOL: 39.9%)
  [3] Short Volume      : Score 57/100 (Short ratio: 57.9% (20261110))
  [4] Dollar Liquidity  : Score 16/100 (TGA: $922.6B | Swaps: $0.0B)
  [5] Credit Stress     : Score 36/100 (Filings: 15)
- [6] Odds and Ends     : Score 4/100 (Wiki Z: +0.28σ | Border: 5m)
+ [6] Odds and Ends     : Score 4/100 (Wiki Z: +0.28σ | Border: 15m)
 
  API: curl -sL https://open-market-weather.hartmut-nese.workers.dev/weather.json
  REPO: https://github.com/hartmutnese-stack/open-market-weather
