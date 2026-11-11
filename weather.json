@@ -1,8 +1,8 @@
 {
   "version": "3.5.1",
-  "timestamp": "2026-11-11 08:12 UTC",
+  "timestamp": "2026-11-11 08:29 UTC",
   "symbol": "☀️",
-  "composite_score": 21,
+  "composite_score": 24,
   "status": "CLEAR SKIES",
   "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
   "color": "#00ff66",
@@ -11,15 +11,15 @@
     "crypto_leverage": false,
     "short_volume": false,
     "dollar_liquidity": false,
-    "credit_stress": true,
+    "credit_stress": false,
     "odds_and_ends": false
   },
   "tactical_posture": {
     "grid_bots": {
       "status": "CAUTION",
       "color": "#ffcc00",
-      "action": "Widen grid bands by 15-25%. Upstream fallback data active on one or more feeds.",
-      "hysteresis": false
+      "action": "Widen grid bands by 15-25%. Reduce leverage / lot sizes.",
+      "hysteresis": true
     },
     "dip_buying": {
       "status": "DEFENSIVE",
@@ -52,8 +52,8 @@
     "crypto_leverage": {
       "score": 4,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 2995.9,
-      "dvol_index": 39.4,
+      "btc_oi_mil": 2977.9,
+      "dvol_index": 39.3,
       "fallback": false,
       "hl_fallback": false,
       "dvol_fallback": false
@@ -74,9 +74,9 @@
       "swaps_fallback": false
     },
     "credit_stress": {
-      "score": 18,
-      "sec_8k_filings": 11,
-      "fallback": true
+      "score": 36,
+      "sec_8k_filings": 15,
+      "fallback": false
     },
     "odds_and_ends": {
       "score": 3,
@@ -96,8 +96,8 @@
     "crypto_247": {
       "score": 4,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 2995.9,
-      "dvol_index": 39.4,
+      "btc_oi_mil": 2977.9,
+      "dvol_index": 39.3,
       "fallback": false,
       "hl_fallback": false,
       "dvol_fallback": false
@@ -118,9 +118,9 @@
       "swaps_fallback": false
     },
     "credit_statutory": {
-      "score": 18,
-      "sec_8k_filings": 11,
-      "fallback": true
+      "score": 36,
+      "sec_8k_filings": 15,
+      "fallback": false
     },
     "cognitive_physical": {
       "score": 3,
