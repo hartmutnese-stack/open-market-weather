@@ -2,13 +2,48 @@
 # -*- coding: utf-8 -*-
 """
 OPEN MARKET WEATHER OBSERVATORY // HYBRID MACRO & CRYPTO
-Version: 3.5.1 (stdlib only)
+Version: 3.6.1 (stdlib only)
+
+3.6.1 is a fix release on top of 3.6.0 (reliability release). Changes:
+  - Grid hysteresis: recovery streak no longer resets when the raw candidate
+    flips between ACTIVE and CAUTION. A recovery steps down to the most
+    conservative candidate seen during the streak: mixed candidates return via
+    CAUTION, a streak of only ACTIVE candidates may go straight to ACTIVE.
+  - Level bands from 3.5.1 are back (enter PAUSED at 65, stay until below 58;
+    calm needs 35 / VIX 20 / crypto 40 to enter, 28 / 18.5 / 35 to return) on top of
+    the run-count confirmation. Set OMW_RECOVERY_CONFIRMATIONS=1 to use bands only.
+  - Status text for a held PAUSED state says so (it no longer claims a fresh pause).
+  - Per-feed User-Agents as in 3.5.1 (browser UA for market feeds, identified UA
+    for SEC and Wikimedia). 3.6.0 sent the identified UA everywhere.
+  - composite_score is an int again (floor, as in 3.5.1) so typed consumers and
+    the status thresholds never disagree. The float is in composite_raw (2 decimals).
+    display_score is kept as an alias of composite_score. history.csv now stores
+    composite_raw in its "composite" column.
+  - Real STALE detection for Yahoo (quote time), FINRA (report date) and TGA
+    (record date). STALE feeds lower the data-quality score and block ACTIVE.
+  - Unusable-but-reachable responses are classified INVALID_RESPONSE and logged.
+  - FINRA lookup stops after two consecutive network errors (no 7 x 8 s timeouts).
+  - atomic_write keeps file permissions (0644 for new files; mkstemp gives 0600).
+  - FetchResult is built with keyword arguments only.
+  - Output validation checks types and all six pillars. History is best-effort:
+    a history error is logged but does not fail a run whose files are already written.
+  - Config values from the environment are validated instead of crashing on import.
+  - Comments, docstrings and the full HTML page of 3.5.1 are restored.
+
+An unexpected exception still aborts the run. The previous weather.json then stays
+in place and expires via valid_until, which is safer than publishing a half result.
 
 Optional environment variables:
-  OMW_CONTACT   Contact string for the User-Agent sent to SEC EDGAR and Wikimedia.
-                Both ask for a real contact, ideally an e-mail address.
-  OMW_BASE_URL  Public URL of your deployment. Used to read the previous state
-                when there is no recent local weather.json (needed for hysteresis).
+  OMW_CONTACT                  Contact string for the User-Agent sent to SEC EDGAR and
+                               Wikimedia. Both ask for a real contact, ideally an e-mail.
+  OMW_BASE_URL                 Public URL of your deployment. Used to read the previous
+                               state when there is no recent local weather.json.
+  OMW_VALID_FOR_HOURS          How long a result is valid (default 2.5).
+  OMW_STATE_MAX_AGE_HOURS      Previous state older than this is ignored (default 4).
+  OMW_RECOVERY_CONFIRMATIONS   Consecutive runs needed to step the grid status down
+                               (default 2, minimum 1).
+  OMW_COLD_START_STATUS        Grid status assumed when no recent state exists
+                               (ACTIVE, CAUTION or PAUSED; default CAUTION).
 """
 
 import csv
@@ -16,19 +51,59 @@ import html as html_lib
 import json
 import math
 import os
+import tempfile
 import time
 import urllib.error
 import urllib.request
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 
-VERSION = "3.5.1"
+
+# ==============================================================================
+# LOGGING AND CONFIG
+# ==============================================================================
+def utc_now():
+    return datetime.now(timezone.utc)
+
+
+def iso_utc(dt):
+    return dt.astimezone(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def log(level, source, message):
+    print(f"[{iso_utc(utc_now())}] [{level}] [{source}] {message}", flush=True)
+
+
+def env_number(name, default, cast=float, minimum=None):
+    """Read a number from the environment. Bad values fall back to the default."""
+    raw = os.environ.get(name)
+    if raw is None or not raw.strip():
+        return default
+    try:
+        value = cast(raw)
+    except ValueError:
+        log("WARN", "CONFIG", f"{name}={raw!r} is not a valid number, using {default}")
+        return default
+    if minimum is not None and value < minimum:
+        log("WARN", "CONFIG", f"{name}={raw!r} is below {minimum}, using {minimum}")
+        return minimum
+    return value
+
+
+VERSION = "3.6.1"
+SCHEMA_VERSION = 1
 BASE_URL = os.environ.get(
     "OMW_BASE_URL", "https://open-market-weather.hartmut-nese.workers.dev"
 ).rstrip("/")
-CONTACT = os.environ.get(
-    "OMW_CONTACT", "admin@marktwetter.org"
-)
+CONTACT = os.environ.get("OMW_CONTACT", "admin@marktwetter.org")
+VALID_FOR_HOURS = env_number("OMW_VALID_FOR_HOURS", 2.5, float, 0.1)
+STATE_MAX_AGE_HOURS = env_number("OMW_STATE_MAX_AGE_HOURS", 4.0, float, 0.1)
+RECOVERY_CONFIRMATIONS = env_number("OMW_RECOVERY_CONFIRMATIONS", 2, int, 1)
+MAX_JSON_BYTES = 5_000_000
 
+# Market feeds get a browser UA (some of them block unknown clients).
+# SEC EDGAR and Wikimedia ask for an identified client with a real contact.
 DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
@@ -40,8 +115,21 @@ FUNDING_BASELINE_APR = 10.95
 # The NY Fed "latest" file can list small routine operations. Below this
 # amount (in billions USD) swap usage counts as noise, not as stress.
 SWAP_NOISE_B = 1.0
-# A previous state older than this is ignored for the hysteresis logic.
-STATE_MAX_AGE_HOURS = 3
+
+# Grid bot thresholds. All comparisons are >= for "hot" and < for "calm".
+PAUSE_ENTER = 65.0   # composite or crypto score at/above this -> PAUSED
+PAUSE_STAY = 58.0    # once PAUSED, stay until both are below this
+CALM_ENTER = {"composite": 35.0, "vix": 20.0, "crypto": 40.0}
+CALM_RETURN = {"composite": 28.0, "vix": 18.5, "crypto": 35.0}
+
+GRID_SEVERITY = {"ACTIVE": 0, "CAUTION": 1, "PAUSED": 2}
+GRID_COLORS = {"ACTIVE": "#00ff66", "CAUTION": "#ffcc00", "PAUSED": "#ff0033"}
+_cold = os.environ.get("OMW_COLD_START_STATUS", "CAUTION").strip().upper()
+COLD_START_STATUS = _cold if _cold in GRID_SEVERITY else "CAUTION"
+
+# A feed whose newest data point is older than this (days) counts as STALE.
+# Weekends and long holiday weekends are inside these limits.
+MAX_AGE_DAYS = {"yahoo": 5, "finra": 4, "tga": 6}
 
 HISTORY_FILE = "history.csv"
 HISTORY_HEADER = [
@@ -68,24 +156,29 @@ LEGACY_KEYS = {
     "cognitive_physical": "odds_and_ends",
 }
 
-# Which sub-feed flags belong to which pillar (for the "[fallback: ...]" tags).
+# Which sub-feed flag belongs to which pillar and feed_health key
+# (for the "[fallback: ...]" and "[stale: ...]" tags).
 FALLBACK_PARTS = {
     "market_volatility": [("fallback", "yahoo")],
     "crypto_leverage": [("hl_fallback", "hyperliquid"), ("dvol_fallback", "deribit")],
     "short_volume": [("fallback", "finra")],
-    "dollar_liquidity": [("tga_fallback", "tga"), ("swaps_fallback", "ny fed")],
+    "dollar_liquidity": [("tga_fallback", "tga"), ("swaps_fallback", "ny_fed")],
     "credit_stress": [("fallback", "sec")],
     "odds_and_ends": [("wiki_fallback", "wikipedia"), ("cbp_fallback", "cbp")],
+}
+
+# Points taken off the data-quality score per degraded feed.
+# FALLBACK costs the full amount, STALE half of it.
+QUALITY_PENALTIES = {
+    "yahoo": 25, "hyperliquid": 25, "deribit": 25,
+    "tga": 15, "ny_fed": 15, "finra": 10, "sec": 10,
+    "wikipedia": 5, "cbp": 5,
 }
 
 
 # ==============================================================================
 # HELPERS
 # ==============================================================================
-def utc_now():
-    return datetime.now(timezone.utc)
-
-
 def clamp(value, lo=0, hi=100):
     return max(lo, min(hi, value))
 
@@ -96,7 +189,7 @@ def to_float(x):
         return None
     try:
         return float(str(x).replace(",", "").strip())
-    except ValueError:
+    except (ValueError, TypeError):
         return None
 
 
@@ -127,42 +220,119 @@ def find_list(obj, key):
     return None
 
 
-def fetch_json(url, timeout=10, headers=None, data=None, retries=1):
-    """GET (or POST with data) and parse JSON. Returns None on failure.
-    Retries once on network errors and 5xx, never on 4xx."""
+def parse_date(value):
+    """'YYYY-MM-DD' -> date, or None."""
+    try:
+        return datetime.strptime(str(value), "%Y-%m-%d").date()
+    except (TypeError, ValueError):
+        return None
+
+
+@dataclass
+class FetchResult:
+    data: object = None
+    ok: bool = False
+    status_code: Optional[int] = None
+    error_type: Optional[str] = None
+    error_message: Optional[str] = None
+
+
+def fetch_json(url, source, timeout=10, headers=None, data=None, retries=1):
+    """GET (or POST with data) and parse JSON. Always returns a FetchResult.
+
+    Retries on network errors, timeouts, 5xx and 429, never on other 4xx.
+    error_type is one of: HTTP_<code>, HTTP_5XX, HTTP_429, TIMEOUT, NETWORK_ERROR,
+    INVALID_JSON, RESPONSE_TOO_LARGE.
+    """
     req_headers = headers or DEFAULT_HEADERS
+    last = FetchResult(error_type="UNKNOWN")
     for attempt in range(retries + 1):
         req = urllib.request.Request(url, data=data, headers=req_headers)
         try:
             with urllib.request.urlopen(req, timeout=timeout) as response:
-                return json.loads(response.read().decode("utf-8"))
-        except urllib.error.HTTPError as e:
-            print(f"[!] Warning: HTTP {e.code} from {url}")
-            if e.code < 500:
-                return None
-        except Exception as e:
-            print(f"[!] Warning: Could not fetch JSON from {url}: {e}")
+                status = getattr(response, "status", 200)
+                raw = response.read(MAX_JSON_BYTES + 1)
+                if len(raw) > MAX_JSON_BYTES:
+                    last = FetchResult(status_code=status, error_type="RESPONSE_TOO_LARGE",
+                                       error_message="JSON response exceeds limit")
+                else:
+                    try:
+                        return FetchResult(data=json.loads(raw.decode("utf-8")), ok=True,
+                                           status_code=status)
+                    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                        last = FetchResult(status_code=status, error_type="INVALID_JSON",
+                                           error_message=str(exc))
+        except urllib.error.HTTPError as exc:
+            if exc.code == 429:
+                err = "HTTP_429"
+            elif exc.code >= 500:
+                err = "HTTP_5XX"
+            else:
+                err = f"HTTP_{exc.code}"
+            last = FetchResult(status_code=exc.code, error_type=err, error_message=str(exc))
+            if exc.code < 500 and exc.code != 429:
+                break
+        except urllib.error.URLError as exc:
+            reason = getattr(exc, "reason", exc)
+            err = "TIMEOUT" if "timed out" in str(reason).lower() else "NETWORK_ERROR"
+            last = FetchResult(error_type=err, error_message=str(reason))
+        except TimeoutError as exc:
+            last = FetchResult(error_type="TIMEOUT", error_message=str(exc))
+        except Exception as exc:
+            last = FetchResult(error_type="NETWORK_ERROR", error_message=str(exc))
         if attempt < retries:
-            time.sleep(1.5)
-    return None
+            time.sleep(1.5 * (2 ** attempt))
+    log("WARN", source, f"{last.error_type}: {last.error_message or 'request failed'}")
+    return last
+
+
+def health(status="OK", error_type=None, detail=None):
+    """One feed_health entry. status: OK | FALLBACK | STALE | CLOSED."""
+    item = {"status": status}
+    if error_type:
+        item["error_type"] = error_type
+    if detail:
+        item["detail"] = detail
+    return item
 
 
 # ==============================================================================
 # PILLAR 1: MARKET VOLATILITY (VIX & MOVE)
 # ==============================================================================
 def yahoo_last_price(ticker):
+    """Returns (price, error_type, age_in_days). price is None on any problem."""
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=5d"
-    return to_float(dig(fetch_json(url), "chart", "result", 0, "meta", "regularMarketPrice"))
+    result = fetch_json(url, "YAHOO")
+    if not result.ok:
+        return None, result.error_type, None
+    meta = dig(result.data, "chart", "result", 0, "meta")
+    price = to_float(dig(meta, "regularMarketPrice"))
+    if price is None:
+        log("WARN", "YAHOO", f"{ticker}: response has no regularMarketPrice")
+        return None, "INVALID_RESPONSE", None
+    quote_ts = to_float(dig(meta, "regularMarketTime"))
+    age = (utc_now().timestamp() - quote_ts) / 86400.0 if quote_ts else None
+    return price, None, age
 
 
-def get_market_volatility():
-    vix = yahoo_last_price("%5EVIX")
-    move = yahoo_last_price("%5EMOVE")
+def get_market_volatility(feed_health):
+    vix, vix_err, vix_age = yahoo_last_price("%5EVIX")
+    move, move_err, move_age = yahoo_last_price("%5EMOVE")
     fallback = vix is None or move is None
     if vix is None:
         vix = 16.5
     if move is None:
         move = 95.0
+
+    ages = [a for a in (vix_age, move_age) if a is not None]
+    oldest = max(ages) if ages else None
+    if fallback:
+        feed_health["yahoo"] = health("FALLBACK", vix_err or move_err)
+    elif oldest is not None and oldest > MAX_AGE_DAYS["yahoo"]:
+        feed_health["yahoo"] = health("STALE", None, f"oldest quote is {oldest:.1f} days old")
+    else:
+        feed_health["yahoo"] = health("OK")
+
     vix_score = clamp(int((vix - 12) * (100 / 23)))      # 12..35
     move_score = clamp(int((move - 70) * (100 / 80)))    # 70..150
     return {
@@ -186,34 +356,42 @@ def funding_stress(apr):
     return clamp(int(8 + min(d, limit) * 1.2 + max(0.0, d - limit) * steep))
 
 
-def get_crypto_leverage():
+def get_crypto_leverage(feed_health):
     funding_apr, oi_mil, dvol = FUNDING_BASELINE_APR, 0.0, 52.0
     hl_fallback = dvol_fallback = True
 
     payload = json.dumps({"type": "metaAndAssetCtxs"}).encode("utf-8")
-    data = fetch_json(
-        "https://api.hyperliquid.xyz/info",
-        timeout=6,
+    hr = fetch_json(
+        "https://api.hyperliquid.xyz/info", "HYPERLIQUID", timeout=6,
         headers={"Content-Type": "application/json", "User-Agent": "Mozilla/5.0"},
         data=payload,
     )
-    try:
-        universe, ctxs = data[0]["universe"], data[1]
-        idx = next(i for i, c in enumerate(universe) if c.get("name") == "BTC")
-        ctx = ctxs[idx]
-        funding = round(float(ctx["funding"]) * 24 * 365 * 100, 1)
-        oi = round(float(ctx["openInterest"]) * float(ctx["oraclePx"]) / 1_000_000, 1)
-        funding_apr, oi_mil, hl_fallback = funding, oi, False
-    except (TypeError, KeyError, IndexError, StopIteration, ValueError, AttributeError):
-        print("[!] Warning: Hyperliquid response not usable, using fallback funding")
+    hl_error = hr.error_type
+    if hr.ok:
+        try:
+            universe, ctxs = hr.data[0]["universe"], hr.data[1]
+            idx = next(i for i, c in enumerate(universe) if c.get("name") == "BTC")
+            ctx = ctxs[idx]
+            funding_apr = round(float(ctx["funding"]) * 24 * 365 * 100, 1)
+            oi_mil = round(float(ctx["openInterest"]) * float(ctx["oraclePx"]) / 1_000_000, 1)
+            hl_fallback, hl_error = False, None
+        except (TypeError, KeyError, IndexError, StopIteration, ValueError, AttributeError):
+            hl_error = "INVALID_RESPONSE"
+            log("WARN", "HYPERLIQUID", "response not usable, using fallback funding")
+    feed_health["hyperliquid"] = health("FALLBACK" if hl_fallback else "OK", hl_error)
 
-    dvol_data = fetch_json(
+    dr = fetch_json(
         "https://www.deribit.com/api/v2/public/get_index_price?index_name=btcdvol_usdc",
-        timeout=6,
+        "DERIBIT", timeout=6,
     )
-    value = to_float(dig(dvol_data, "result", "index_price"))
+    value = to_float(dig(dr.data, "result", "index_price")) if dr.ok else None
+    dvol_error = dr.error_type
     if value is not None:
-        dvol, dvol_fallback = round(value, 1), False
+        dvol, dvol_fallback, dvol_error = round(value, 1), False, None
+    elif dr.ok:
+        dvol_error = "INVALID_RESPONSE"
+        log("WARN", "DERIBIT", "response has no index_price, using fallback DVOL")
+    feed_health["deribit"] = health("FALLBACK" if dvol_fallback else "OK", dvol_error)
 
     vola_stress = clamp(int((dvol - 42.0) * (100 / 38)))   # 42..80
     return {
@@ -236,7 +414,10 @@ def short_volume_score(ratio):
 
 
 def finra_spy_ratio(date_str):
-    """SPY short volume share (in %) for one day, or None if the file is missing."""
+    """SPY short volume share for one day. Returns (ratio_in_percent, state).
+
+    state is OK, MISSING (no file for that day, normal on weekends and holidays)
+    or ERROR (network problem, worth stopping for)."""
     url = f"https://cdn.finra.org/equity/regsho/daily/CNMSshvol{date_str}.txt"
     try:
         req = urllib.request.Request(url, headers=DEFAULT_HEADERS)
@@ -247,26 +428,47 @@ def finra_spy_ratio(date_str):
                     continue
                 parts = line.strip().split("|")
                 if len(parts) >= 5 and parts[1] == "SPY":
-                    short_vol, total_vol = float(parts[2]), float(parts[4])
+                    try:
+                        short_vol, total_vol = float(parts[2]), float(parts[4])
+                    except ValueError:
+                        continue
                     if total_vol > 0:
-                        return round(short_vol / total_vol * 100, 1)
+                        return round(short_vol / total_vol * 100, 1), "OK"
+        return None, "MISSING"
+    except urllib.error.HTTPError as exc:
+        return None, ("MISSING" if exc.code in (403, 404) else "ERROR")
     except Exception:
-        pass
-    return None
+        return None, "ERROR"
 
 
-def get_short_volume():
+def get_short_volume(feed_health):
     today = utc_now()
+    consecutive_errors = 0
     for i in range(7):
-        date_str = (today - timedelta(days=i)).strftime("%Y%m%d")
-        ratio = finra_spy_ratio(date_str)
+        day = today - timedelta(days=i)
+        date_str = day.strftime("%Y%m%d")
+        ratio, state = finra_spy_ratio(date_str)
+        if state == "ERROR":
+            consecutive_errors += 1
+            if consecutive_errors >= 2:
+                break
+            continue
+        consecutive_errors = 0
         if ratio is not None:
+            age = i
+            if age > MAX_AGE_DAYS["finra"]:
+                feed_health["finra"] = health("STALE", None, f"newest file is {age} days old")
+            else:
+                feed_health["finra"] = health("OK")
             return {
                 "score": short_volume_score(ratio),
                 "spy_short_volume_ratio": ratio,
                 "report_date": date_str,
                 "fallback": False,
             }
+    error = "NETWORK_ERROR" if consecutive_errors >= 2 else "NO_RECENT_FILE"
+    log("WARN", "FINRA", f"{error}: no usable Reg SHO file, using fallback ratio")
+    feed_health["finra"] = health("FALLBACK", error)
     return {
         "score": short_volume_score(49.0),
         "spy_short_volume_ratio": 49.0,
@@ -278,22 +480,29 @@ def get_short_volume():
 # ==============================================================================
 # PILLAR 4: DOLLAR LIQUIDITY (TREASURY GENERAL ACCOUNT & NY FED SWAP LINES)
 # ==============================================================================
-def get_dollar_liquidity():
+def get_dollar_liquidity(feed_health):
     tga_url = (
         "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/dts/"
         "operating_cash_balance?filter=account_type:eq:Treasury%20General%20Account%20(TGA)"
         "%20Closing%20Balance&sort=-record_date&page%5Bsize%5D=10"
     )
-    rows = dig(fetch_json(tga_url), "data", default=[]) or []
+    tr = fetch_json(tga_url, "TGA")
+    rows = dig(tr.data, "data", default=[]) if tr.ok else []
+    if not isinstance(rows, list):
+        rows = []
     values = []
+    latest_date = None
     for row in rows:
         if not isinstance(row, dict):
             continue
         val = to_float(row.get("open_today_bal"))
         if val is None:
             val = to_float(row.get("close_today_bal"))
-        if val is not None:
-            values.append(val)
+        if val is None:
+            continue
+        if not values:
+            latest_date = parse_date(row.get("record_date"))
+        values.append(val)
 
     tga_bal, tga_change, tga_score, tga_fallback = 850.0, 0.0, 15, True
     if len(values) >= 2:
@@ -303,8 +512,17 @@ def get_dollar_liquidity():
         tga_score = clamp(int(abs(tga_change) * 1.5))
         tga_fallback = False
 
-    swap_data = fetch_json("https://markets.newyorkfed.org/api/fxs/all/latest.json")
-    operations = find_list(swap_data, "operations")
+    if tga_fallback:
+        feed_health["tga"] = health("FALLBACK", tr.error_type or "INVALID_RESPONSE")
+    else:
+        age = (utc_now().date() - latest_date).days if latest_date else None
+        if age is not None and age > MAX_AGE_DAYS["tga"]:
+            feed_health["tga"] = health("STALE", None, f"latest record is {age} days old")
+        else:
+            feed_health["tga"] = health("OK")
+
+    sr = fetch_json("https://markets.newyorkfed.org/api/fxs/all/latest.json", "NY_FED")
+    operations = find_list(sr.data, "operations") if sr.ok else None
     swap_b, swaps_fallback = 0.0, True
     if operations is not None:
         # An empty list is the normal case: no swap line usage, not an error.
@@ -313,6 +531,10 @@ def get_dollar_liquidity():
             amount = to_float(op.get("amount")) if isinstance(op, dict) else None
             if amount is not None:
                 swap_b += amount / 1_000_000_000.0   # assumes USD
+    feed_health["ny_fed"] = health(
+        "FALLBACK" if swaps_fallback else "OK",
+        (sr.error_type or "INVALID_RESPONSE") if swaps_fallback else None,
+    )
 
     swap_score = clamp(int(swap_b * 10))
     return {
@@ -334,7 +556,7 @@ def credit_score_from_count(count):
     return clamp(int((count - 6.8) * 4.4), 5, 100)
 
 
-def get_credit_stress():
+def get_credit_stress(feed_health):
     today = utc_now()
     start = (today - timedelta(days=14)).strftime("%Y-%m-%d")
     end = today.strftime("%Y-%m-%d")
@@ -342,24 +564,32 @@ def get_credit_stress():
         "https://efts.sec.gov/LATEST/search-index?q=%22Item+2.04%22&forms=8-K"
         f"&dateRange=custom&startdt={start}&enddt={end}"
     )
-    data = fetch_json(url, timeout=8, headers=COMPLIANT_HEADERS)
-    total = dig(data, "hits", "total")
+    result = fetch_json(url, "SEC", timeout=8, headers=COMPLIANT_HEADERS)
+    total = dig(result.data, "hits", "total") if result.ok else None
     if isinstance(total, dict):
         total = total.get("value")
-    if isinstance(total, int) and not isinstance(total, bool):
-        count, fallback = total, False
-    else:
-        count, fallback = 11, True
+    valid = isinstance(total, int) and not isinstance(total, bool)
+    count = total if valid else 11
+    feed_health["sec"] = health(
+        "OK" if valid else "FALLBACK",
+        None if valid else (result.error_type or "INVALID_RESPONSE"),
+    )
     return {
         "score": credit_score_from_count(count),
         "sec_8k_filings": count,
-        "fallback": fallback,
+        "fallback": not valid,
     }
 
 
 # ==============================================================================
 # PILLAR 6: ODDS AND ENDS (WIKIPEDIA CRISIS TRAFFIC 6% & CBP LAREDO TRUCKS 4%)
 # ==============================================================================
+WIKI_ARTICLES = [
+    "Bank_run", "Credit_default_swap", "Circuit_breaker_(stock_market)",
+    "Force_majeure", "Bail-in", "Insolvency",
+]
+
+
 def wikipedia_zscore(article, start_date, end_date):
     """Mean of the last 7 days against the 3+ weeks before. A full week in the
     recent window cancels the weekday/weekend swing."""
@@ -367,7 +597,8 @@ def wikipedia_zscore(article, start_date, end_date):
         "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia.org/"
         f"all-access/user/{article}/daily/{start_date}/{end_date}"
     )
-    items = dig(fetch_json(url, timeout=5, headers=COMPLIANT_HEADERS), "items")
+    result = fetch_json(url, "WIKIPEDIA", timeout=5, headers=COMPLIANT_HEADERS)
+    items = dig(result.data, "items") if result.ok else None
     if not isinstance(items, list) or len(items) < 21:
         return None
     views = [x.get("views", 0) for x in items]
@@ -378,7 +609,7 @@ def wikipedia_zscore(article, start_date, end_date):
 
 
 def laredo_truck_wait():
-    """Returns (wait, feed_ok).
+    """Returns (wait, feed_ok, error_type).
 
     wait:    longest commercial-lane delay in minutes across the Laredo crossings,
              or None when no crossing reports a delay value. That is normal at night:
@@ -386,9 +617,10 @@ def laredo_truck_wait():
              reports no delay data ("Lanes Closed" / "Update Pending").
     feed_ok: False only when the response is unusable or has no Laredo entries at all.
     """
-    data = fetch_json("https://bwt.cbp.gov/api/bwtpublicmod", timeout=8)
+    result = fetch_json("https://bwt.cbp.gov/api/bwtpublicmod", "CBP", timeout=8)
+    data = result.data if result.ok else None
     if not isinstance(data, list):
-        return None, False
+        return None, False, (result.error_type or "INVALID_RESPONSE")
     found_laredo = False
     delays = []
     for port in data:
@@ -407,38 +639,52 @@ def laredo_truck_wait():
                 delay = lane.get("delay_minutes")
                 if delay is not None and str(delay).strip().isdigit():
                     delays.append(int(delay))
-    return (max(delays) if delays else None), found_laredo
+    error = None if found_laredo else "NO_LAREDO_ENTRY"
+    return (max(delays) if delays else None), found_laredo, error
 
 
-def get_odds_and_ends():
-    articles = [
-        "Bank_run", "Credit_default_swap", "Circuit_breaker_(stock_market)",
-        "Force_majeure", "Bail-in", "Insolvency",
-    ]
+def get_odds_and_ends(feed_health):
     today = utc_now()
     end_date = (today - timedelta(days=2)).strftime("%Y%m%d")      # latency buffer
     start_date = (today - timedelta(days=32)).strftime("%Y%m%d")
 
     zscores = []
-    for article in articles:
+    for article in WIKI_ARTICLES:
         z = wikipedia_zscore(article, start_date, end_date)
         if z is not None:
             zscores.append(z)
     wiki_fallback = not zscores
     avg_z = sum(zscores) / len(zscores) if zscores else 0.0
+    if wiki_fallback:
+        feed_health["wikipedia"] = health("FALLBACK", "INSUFFICIENT_DATA")
+    else:
+        detail = None
+        if len(zscores) < len(WIKI_ARTICLES):
+            detail = f"{len(zscores)}/{len(WIKI_ARTICLES)} articles usable"
+        feed_health["wikipedia"] = health("OK", None, detail)
     wiki_score = clamp(int(avg_z * 25))
 
-    wait, cbp_ok = laredo_truck_wait()
+    wait, cbp_ok, cbp_error = laredo_truck_wait()
     cbp_fallback = not cbp_ok
     # No delay value (bridge closed, update pending) counts as no border stress,
     # and it is not a feed failure.
     phys_score = clamp(int((wait - 15) * (100 / 105))) if wait is not None else 0
+    if cbp_fallback:
+        feed_health["cbp"] = health("FALLBACK", cbp_error)
+        border_state = "UNKNOWN"
+    elif wait is None:
+        feed_health["cbp"] = health("CLOSED", None, "Laredo feed reachable; no delay value")
+        border_state = "CLOSED"
+    else:
+        feed_health["cbp"] = health("OK")
+        border_state = "OBSERVED"
 
     return {
         "score": int(wiki_score * 0.6 + phys_score * 0.4),
         "wiki_z": round(avg_z, 2),
         "wiki_articles_ok": len(zscores),
         "border_wait_m": wait,
+        "border_state": border_state,
         "fallback": wiki_fallback or cbp_fallback,
         "wiki_fallback": wiki_fallback,
         "cbp_fallback": cbp_fallback,
@@ -449,9 +695,16 @@ def get_odds_and_ends():
 # PREVIOUS STATE (for hysteresis)
 # ==============================================================================
 def parse_ts(value):
+    """Accepts '2026-01-01T12:00:00Z' and '2026-01-01 12:00 UTC'."""
+    if not value or not isinstance(value, str):
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(timezone.utc)
+    except ValueError:
+        pass
     try:
         return datetime.strptime(value, "%Y-%m-%d %H:%M UTC").replace(tzinfo=timezone.utc)
-    except (TypeError, ValueError):
+    except ValueError:
         return None
 
 
@@ -463,58 +716,158 @@ def read_local_state():
         return None
 
 
-def previous_grid_status():
-    """Grid status of the last run, from the local file or the live site.
+def previous_state():
+    """The last run's weather.json (local file first, then the live site).
     Ignored when older than STATE_MAX_AGE_HOURS."""
     loaders = (
         read_local_state,
-        lambda: fetch_json(f"{BASE_URL}/weather.json", timeout=6, retries=0),
+        lambda: fetch_json(f"{BASE_URL}/weather.json", "PREVIOUS_STATE", timeout=6, retries=0).data,
     )
     for load in loaders:
-        prev = load()
-        ts = parse_ts(dig(prev, "timestamp"))
+        try:
+            prev = load()
+        except Exception:
+            prev = None
+        ts = parse_ts(dig(prev, "generated_at") or dig(prev, "timestamp"))
         if ts and utc_now() - ts <= timedelta(hours=STATE_MAX_AGE_HOURS):
-            status = dig(prev, "tactical_posture", "grid_bots", "status")
-            if status:
-                return status
+            return prev
     return None
 
 
+def previous_grid_status(prev):
+    status = dig(prev, "tactical_posture", "grid_bots", "status")
+    return status if isinstance(status, str) and status in GRID_SEVERITY else None
+
+
 # ==============================================================================
-# TACTICAL POSTURE (with hysteresis for the grid bot status)
+# DATA QUALITY
 # ==============================================================================
-def generate_tactical_posture(composite, p, fallback_flags, prev_grid_status=None):
+def data_quality(feed_health):
+    score = 100
+    degraded = []
+    for name, item in feed_health.items():
+        penalty = QUALITY_PENALTIES.get(name, 5)
+        if item["status"] == "FALLBACK":
+            score -= penalty
+            degraded.append(name)
+        elif item["status"] == "STALE":
+            score -= max(1, penalty // 2)
+            degraded.append(name)
+    score = clamp(score)
+    status = "HIGH" if score >= 90 else ("MEDIUM" if score >= 70 else "LOW")
+    # fallback_count includes STALE feeds (kept under this name for 3.6.0 consumers).
+    return {"status": status, "score": score, "fallback_count": len(degraded),
+            "degraded_feeds": degraded}
+
+
+# ==============================================================================
+# GRID STATUS (level bands + run-count confirmation)
+# ==============================================================================
+def raw_grid_candidate(composite, p, clean, prev_status):
+    """What the grid status would be without confirmation delay.
+
+    Level bands: once PAUSED, the pause threshold is lower (PAUSE_STAY), and from
+    CAUTION or PAUSED the calm thresholds are stricter (CALM_RETURN)."""
     vix = p["market_volatility"]["vix"]
+    crypto = p["crypto_leverage"]["score"]
+    pause_limit = PAUSE_STAY if prev_status == "PAUSED" else PAUSE_ENTER
+    if crypto >= pause_limit or composite >= pause_limit:
+        return "PAUSED"
+    band = CALM_RETURN if prev_status in ("CAUTION", "PAUSED") else CALM_ENTER
+    calm = composite < band["composite"] and vix < band["vix"] and crypto < band["crypto"]
+    return "ACTIVE" if calm and clean else "CAUTION"
+
+
+def resolve_grid_status(candidate, prev_status, prev_transition):
+    """Apply confirmation to a raw candidate. Returns (status, transition).
+
+    Escalation (higher severity) and unchanged status apply immediately.
+    Stepping down needs RECOVERY_CONFIRMATIONS consecutive runs below the
+    current status. The step goes to the MOST CONSERVATIVE candidate seen in
+    that streak, so a flip between ACTIVE and CAUTION cannot reset the count.
+    Example from PAUSED: CAUTION, ACTIVE -> CAUTION (then two more ACTIVE runs
+    for ACTIVE); ACTIVE, ACTIVE -> ACTIVE directly.
+
+    transition.confirmed_runs counts the current recovery streak (0 when none).
+    """
+    cold_start = prev_status is None
+    previous = prev_status or COLD_START_STATUS
+    required = RECOVERY_CONFIRMATIONS
+    base = {
+        "previous_status": previous,
+        "candidate_status": candidate,
+        "required_runs": required,
+        "cold_start": cold_start,
+    }
+    cand_sev, prev_sev = GRID_SEVERITY[candidate], GRID_SEVERITY[previous]
+
+    if cand_sev >= prev_sev:
+        return candidate, {**base, "confirmed_runs": 0, "recovering": False,
+                           "recovery_target": None, "status_changed": candidate != previous}
+
+    streak, target = 0, candidate
+    old = prev_transition if isinstance(prev_transition, dict) else {}
+    if old.get("recovering") and old.get("previous_status") == previous:
+        streak = int(to_float(old.get("confirmed_runs")) or 0)
+        old_target = old.get("recovery_target")
+        if isinstance(old_target, str) and old_target in GRID_SEVERITY \
+                and GRID_SEVERITY[old_target] > GRID_SEVERITY[target]:
+            target = old_target
+    streak += 1
+
+    if streak >= required:
+        # If the target is still above the candidate, the next step starts from zero.
+        done = streak if target == candidate else 0
+        return target, {**base, "confirmed_runs": done, "recovering": False,
+                        "recovery_target": None, "status_changed": True}
+    return previous, {**base, "confirmed_runs": streak, "recovering": True,
+                      "recovery_target": target, "status_changed": False}
+
+
+# ==============================================================================
+# TACTICAL POSTURE
+# ==============================================================================
+def generate_tactical_posture(composite, p, quality, prev):
     crypto_score = p["crypto_leverage"]["score"]
     funding = p["crypto_leverage"]["btc_funding_apr"]
     svr = p["short_volume"]["spy_short_volume_ratio"]
     swaps = p["dollar_liquidity"]["swaps_billions"]
-    any_fallback = any(fallback_flags.values())
+    clean = quality["status"] == "HIGH" and not quality["degraded_feeds"]
     posture = {}
 
-    # 1. Grid bots. Leaving CAUTION or PAUSED needs clearer readings than entering.
-    hot_enter = crypto_score > 65 or composite >= 65
-    hot_stay = crypto_score > 58 or composite >= 58
-    hot = hot_stay if prev_grid_status == "PAUSED" else hot_enter
-    calm_enter = composite < 35 and vix < 20.0 and crypto_score < 40
-    calm_return = composite < 28 and vix < 18.5 and crypto_score < 35
-    calm = calm_return if prev_grid_status in ("CAUTION", "PAUSED") else calm_enter
-    held = (hot and not hot_enter) or (not hot and calm_enter and not calm)
+    # 1. Grid bots
+    prev_status = previous_grid_status(prev)
+    prev_transition = dig(prev, "transition", default={})
+    candidate = raw_grid_candidate(composite, p, clean, prev_status)
+    grid_status, transition = resolve_grid_status(candidate, prev_status, prev_transition)
+    held = grid_status != candidate
+    pending = f"{transition['confirmed_runs']}/{transition['required_runs']} confirmations"
+    if transition["cold_start"]:
+        pending += ", no recent previous state"
+    hot_enter = crypto_score >= PAUSE_ENTER or composite >= PAUSE_ENTER
 
-    if hot and not hot_enter:
-        grid = ("PAUSED", "#ff0033", "Staying paused until the overall and crypto scores fall below 58.")
-    elif hot:
-        grid = ("PAUSED", "#ff0033", f"Pause new grids. Dislocation risk elevated (overall {composite}, crypto {crypto_score}).")
-    elif calm and any_fallback:
-        grid = ("CAUTION", "#ffcc00", "Widen grid bands by 15-25%. Upstream fallback data active on one or more feeds.")
-    elif calm:
-        grid = ("ACTIVE", "#00ff66", "Calm conditions. Standard grid parameters.")
+    if grid_status == "PAUSED" and held:
+        action = f"Staying paused: recovery pending ({pending})."
+    elif grid_status == "PAUSED" and prev_status == "PAUSED" and not hot_enter:
+        action = f"Staying paused until the overall and crypto scores fall below {PAUSE_STAY:g}."
+    elif grid_status == "PAUSED":
+        action = (f"Pause new grid bids. Dislocation risk elevated "
+                  f"(overall {composite:.1f}, crypto {crypto_score}).")
+    elif grid_status == "ACTIVE":
+        action = "Calm conditions. Standard grid parameters."
+    elif held:
+        action = f"Widen grid bands by 15-25%. Recovery pending ({pending})."
+    elif not clean:
+        action = "Widen grid bands by 15-25%. Upstream data quality is degraded."
     else:
-        grid = ("CAUTION", "#ffcc00", "Widen grid bands by 15-25%. Reduce leverage / lot sizes.")
-    posture["grid_bots"] = {"status": grid[0], "color": grid[1], "action": grid[2], "hysteresis": held}
+        action = "Widen grid bands by 15-25%. Reduce leverage / lot sizes."
+    posture["grid_bots"] = {
+        "status": grid_status, "color": GRID_COLORS[grid_status], "action": action,
+        "hysteresis": held, "confirmed_runs": transition["confirmed_runs"],
+    }
 
     # 2. Dip buying
-    if composite < 45 and svr < 55.0 and crypto_score < 50 and not any_fallback:
+    if composite < 45 and svr < 55.0 and crypto_score < 50 and clean:
         posture["dip_buying"] = {"status": "FAVORABLE", "color": "#00ff66", "action": "Orderly pullbacks. Liquidity supports absorption."}
     else:
         posture["dip_buying"] = {"status": "DEFENSIVE", "color": "#ff6600", "action": "Support lines fragile. Do not catch falling knives."}
@@ -540,31 +893,37 @@ def generate_tactical_posture(composite, p, fallback_flags, prev_grid_status=Non
 
     # 5. Central bank swap lines
     if swaps >= SWAP_NOISE_B:
-        posture["collateral"] = {"status": "FRICTION DETECTED", "color": "#ff0033", "action": f"Central bank swap lines in use (${swaps}B)."}
+        posture["collateral"] = {"status": "FRICTION DETECTED", "color": "#ff0033", "action": f"Central bank swap operations: ${swaps}B."}
     elif composite >= 50:
-        posture["collateral"] = {"status": "WATCH", "color": "#ffcc00", "action": "Swap lines quiet, but overall market friction is elevated."}
+        posture["collateral"] = {"status": "WATCH", "color": "#ffcc00", "action": "Swap operations quiet, but overall market friction is elevated."}
     else:
-        posture["collateral"] = {"status": "STABLE", "color": "#00ff66", "action": "No meaningful central bank swap usage."}
+        posture["collateral"] = {"status": "STABLE", "color": "#00ff66", "action": "No meaningful central bank swap operations."}
 
-    return posture
+    return posture, transition
 
 
 # ==============================================================================
 # MAIN ENGINE
 # ==============================================================================
 def calculate_systemic_weather():
-    prev_status = previous_grid_status()
+    started = utc_now()
+    prev = previous_state()
+    feed_health = {}
 
     pillars = {
-        "market_volatility": get_market_volatility(),
-        "crypto_leverage": get_crypto_leverage(),
-        "short_volume": get_short_volume(),
-        "dollar_liquidity": get_dollar_liquidity(),
-        "credit_stress": get_credit_stress(),
-        "odds_and_ends": get_odds_and_ends(),
+        "market_volatility": get_market_volatility(feed_health),
+        "crypto_leverage": get_crypto_leverage(feed_health),
+        "short_volume": get_short_volume(feed_health),
+        "dollar_liquidity": get_dollar_liquidity(feed_health),
+        "credit_stress": get_credit_stress(feed_health),
+        "odds_and_ends": get_odds_and_ends(feed_health),
     }
-    composite = int(sum(pillars[k]["score"] * w for k, w in WEIGHTS.items()) + 1e-9)
+    # The rounded value is what every threshold sees and what is stored, so the
+    # integer composite_score (floor) can never disagree with the status.
+    composite = round(sum(pillars[k]["score"] * w for k, w in WEIGHTS.items()), 2)
+    composite_score = int(math.floor(composite + 1e-9))
     fallback_flags = {k: v["fallback"] for k, v in pillars.items()}
+    quality = data_quality(feed_health)
 
     if composite < 25:
         symbol, status, color = "☀️", "CLEAR SKIES", "#00ff66"
@@ -579,39 +938,68 @@ def calculate_systemic_weather():
         symbol, status, color = "⛈️", "SEVERE GALE / SYSTEMIC SHOCK", "#ff0033"
         desc = "High alert: widespread dislocation across multiple operational feeds."
 
-    tactical = generate_tactical_posture(composite, pillars, fallback_flags, prev_status)
+    tactical, transition = generate_tactical_posture(composite, pillars, quality, prev)
 
     for old_key, new_key in LEGACY_KEYS.items():
         pillars[old_key] = pillars[new_key]
 
-    return {
+    generated = utc_now()
+    result = {
+        "schema_version": SCHEMA_VERSION,
         "version": VERSION,
-        "timestamp": utc_now().strftime("%Y-%m-%d %H:%M UTC"),
+        "timestamp": generated.strftime("%Y-%m-%d %H:%M UTC"),
+        "generated_at": iso_utc(generated),
+        "valid_until": iso_utc(generated + timedelta(hours=VALID_FOR_HOURS)),
+        "run_status": "COMPLETE" if not quality["degraded_feeds"] else "DEGRADED",
+        "run_duration_seconds": round((generated - started).total_seconds(), 2),
         "symbol": symbol,
-        "composite_score": composite,
+        "composite_score": composite_score,
+        "composite_raw": composite,
+        "display_score": composite_score,
         "status": status,
         "desc": desc,
         "color": color,
+        "data_quality": quality,
         "fallback_flags": fallback_flags,
+        "feed_health": feed_health,
+        "transition": transition,
         "tactical_posture": tactical,
         "pillars": pillars,
     }
+    log("INFO", "ENGINE",
+        f"Composite={composite:.2f} Quality={quality['score']} "
+        f"Degraded={','.join(quality['degraded_feeds']) or 'none'} "
+        f"Grid={tactical['grid_bots']['status']}")
+    return result
 
 
 # ==============================================================================
 # EXPORT
 # ==============================================================================
-def fb_tag(pillar_key, pillar):
-    """'fallback: tga, ny fed' or ''."""
-    bad = [label for flag, label in FALLBACK_PARTS[pillar_key] if pillar.get(flag)]
-    return f"fallback: {', '.join(bad)}" if bad else ""
+def fb_tag(pillar_key, pillar, feed_health):
+    """'fallback: tga, ny fed; stale: yahoo' or ''."""
+    parts = FALLBACK_PARTS[pillar_key]
+    fallback = [feed.replace("_", " ") for flag, feed in parts if pillar.get(flag)]
+    stale = [feed.replace("_", " ") for _, feed in parts
+             if dig(feed_health, feed, "status") == "STALE"]
+    tags = []
+    if fallback:
+        tags.append(f"fallback: {', '.join(fallback)}")
+    if stale:
+        tags.append(f"stale: {', '.join(stale)}")
+    return "; ".join(tags)
 
 
-def pillar_rows(p):
+def pillar_rows(p, feed_health):
     mv, cl, sv = p["market_volatility"], p["crypto_leverage"], p["short_volume"]
     dl, cs, oe = p["dollar_liquidity"], p["credit_stress"], p["odds_and_ends"]
     funding_str = f"{cl['btc_funding_apr']:+.1f}%"
-    border = f"{oe['border_wait_m']}m" if oe["border_wait_m"] is not None else "closed / no data"
+    if oe["border_wait_m"] is not None:
+        border = f"{oe['border_wait_m']}m"
+    elif oe.get("border_state") == "UNKNOWN":
+        border = "unknown"
+    else:
+        border = "closed / no data"
     rows = [
         ("market_volatility", "Market Volatility", "S&P 500 VIX + Treasury MOVE Index",
          f"VIX: {mv['vix']} | MOVE: {mv['move_index']}"),
@@ -626,7 +1014,7 @@ def pillar_rows(p):
         ("odds_and_ends", "Odds and Ends", "Wikipedia crisis traffic (6%) + CBP Laredo truck waits (4%)",
          f"Wiki Z: +{oe['wiki_z']}σ | Border: {border}"),
     ]
-    return [(key, title, feed, values, p[key]["score"], fb_tag(key, p[key]))
+    return [(key, title, feed, values, p[key]["score"], fb_tag(key, p[key], feed_health))
             for key, title, feed, values in rows]
 
 
@@ -636,14 +1024,12 @@ def blank_if(pillar, flag, field):
     return "" if pillar.get(flag) or value is None else value
 
 
-def write_history(data):
-    """Append raw values to history.csv for later calibration. Values that came
-    from fallback defaults are left empty so they don't pollute the history."""
+def history_row(data):
     p = data["pillars"]
     mv, cl, sv = p["market_volatility"], p["crypto_leverage"], p["short_volume"]
     dl, cs, oe = p["dollar_liquidity"], p["credit_stress"], p["odds_and_ends"]
-    row = [
-        data["timestamp"], data["composite_score"],
+    return [
+        data["timestamp"], data["composite_raw"],
         blank_if(mv, "fallback", "vix"), blank_if(mv, "fallback", "move_index"),
         blank_if(cl, "hl_fallback", "btc_funding_apr"), blank_if(cl, "dvol_fallback", "dvol_index"),
         blank_if(sv, "fallback", "spy_short_volume_ratio"),
@@ -652,24 +1038,46 @@ def write_history(data):
         blank_if(cs, "fallback", "sec_8k_filings"),
         blank_if(oe, "wiki_fallback", "wiki_z"), blank_if(oe, "cbp_fallback", "border_wait_m"),
     ]
-    is_new = not os.path.exists(HISTORY_FILE)
+
+
+def append_history(data):
+    """Append raw values to history.csv for later calibration. Values that came
+    from fallback defaults are left empty so they don't pollute the history."""
+    exists = os.path.exists(HISTORY_FILE) and os.path.getsize(HISTORY_FILE) > 0
+    rows_before = 0
+    if exists:
+        with open(HISTORY_FILE, "r", encoding="utf-8", newline="") as f:
+            reader = csv.reader(f)
+            header = next(reader, None)
+            rows_before = sum(1 for _ in reader)
+        if header != HISTORY_HEADER:
+            log("WARN", "HISTORY", f"unexpected header in {HISTORY_FILE}, appending anyway")
     with open(HISTORY_FILE, "a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        if is_new:
+        if not exists:
             writer.writerow(HISTORY_HEADER)
-        writer.writerow(row)
+        writer.writerow(history_row(data))
+        f.flush()
+        os.fsync(f.fileno())
+    log("INFO", "HISTORY", f"loaded {rows_before} observations; appended observation {rows_before + 1}")
 
 
 def render_text(data, rows):
     t = data["tactical_posture"]
+    q = data["data_quality"]
     lines = [
         "",
         "=" * 70,
         f" OPEN MARKET WEATHER OBSERVATORY // HYBRID MACRO & CRYPTO // v{data['version']}",
-        f" {data['timestamp']} // STANDALONE HEURISTIC // PERIODIC RUN",
+        f" {data['timestamp']} // {data['run_status']} // VALID UNTIL {data['valid_until']}",
         "=" * 70,
         "",
         f" OVERALL STATUS : {data['status']} [Score: {data['composite_score']}/100]",
+        f" DATA QUALITY   : {q['status']} [{q['score']}/100]",
+    ]
+    if q["degraded_feeds"]:
+        lines.append(f" DEGRADED FEEDS : {', '.join(q['degraded_feeds'])}")
+    lines += [
         f" CURRENT REGIME : {data['desc']}",
         "",
         " --- TACTICAL POSTURE (SUGGESTIONS FOR TRADING BOTS) ---",
@@ -719,6 +1127,10 @@ HTML_CSS = """
         .status-symbol { font-size: 3.8rem; line-height: 1; margin-bottom: 0.6rem; display: block; }
         .status-title { font-size: 1.5rem; color: __COLOR__; margin: 0 0 0.5rem 0; font-weight: bold; }
         .status-desc { color: #9ca3af; font-size: 0.95rem; max-width: 650px; margin: auto; }
+        .quality { margin-top: 0.8rem; font-size: 0.85rem; font-weight: bold; }
+        .q-high { color: #00ff66; }
+        .q-medium { color: #ffcc00; }
+        .q-low { color: #ff6600; }
         .posture-card { border: 1px solid #2d3748; background: #0d1117; padding: 1.25rem; margin-bottom: 2rem; border-radius: 4px; }
         .posture-title { font-size: 0.9rem; font-weight: bold; color: #e2e8f0; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px dashed #2d3748; padding-bottom: 0.5rem; margin-bottom: 0.75rem; }
         .posture-item { display: flex; justify-content: space-between; align-items: baseline; padding: 0.5rem 0; border-bottom: 1px solid #161b22; font-size: 0.9rem; }
@@ -752,9 +1164,12 @@ def fb_html(fb):
 def render_html(data, rows):
     esc = html_lib.escape
     t = data["tactical_posture"]
+    q = data["data_quality"]
     score, symbol, status = data["composite_score"], data["symbol"], esc(data["status"])
     timestamp, desc = data["timestamp"], esc(data["desc"])
     css = HTML_CSS.replace("__COLOR__", data["color"])
+    quality_class = "q-" + q["status"].lower()
+    degraded = f" // degraded: {esc(', '.join(q['degraded_feeds']))}" if q["degraded_feeds"] else ""
 
     posture_html = "".join(
         f"""
@@ -791,7 +1206,8 @@ def render_html(data, rows):
 <body>
     <div class="header">
         <strong>OPEN MARKET WEATHER OBSERVATORY</strong><br>
-        <span class="badge-sub">TIMESTAMP: {timestamp} // PERIODIC RUN // v{data['version']}</span>
+        <span class="badge-sub">TIMESTAMP: {timestamp} // {esc(data['run_status'])} // v{data['version']}</span><br>
+        <span class="badge-sub">VALID UNTIL: {esc(data['valid_until'])}</span>
         <div class="header-links">
             <a href="weather.json">[Raw JSON API]</a> &nbsp;|&nbsp;
             <a href="weather.txt">[Plaintext for cURL]</a> &nbsp;|&nbsp;
@@ -803,6 +1219,7 @@ def render_html(data, rows):
         <span class="status-symbol">{symbol}</span>
         <div class="status-title">{status} (SCORE: {score}/100)</div>
         <div class="status-desc">{desc}</div>
+        <div class="quality {quality_class}">DATA QUALITY: {q['status']} ({q['score']}/100){degraded}</div>
     </div>
 
     <div class="posture-card">
@@ -821,30 +1238,84 @@ def render_html(data, rows):
     </div>
 
     <div class="footer">
-        Open market metrics. Built with Python stdlib on Cloudflare and GitHub Actions. No financial advice.<br>
-        CLI access: <code>curl -sL {BASE_URL}/weather.txt</code>
+        Open market metrics. Built with Python stdlib on Cloudflare and GitHub Actions. Files are written atomically. No financial advice.<br>
+        CLI access: <code>curl -sL {esc(BASE_URL)}/weather.txt</code>
     </div>
 </body>
 </html>
 """
 
 
-def export_files(data):
-    rows = pillar_rows(data["pillars"])
+def atomic_write(path, content):
+    """Write via temp file + os.replace so readers never see a half-written file.
+    mkstemp creates 0600 files, so the mode is set explicitly: an existing
+    file keeps its mode, a new one gets 0644."""
+    directory = os.path.dirname(os.path.abspath(path)) or "."
+    try:
+        mode = os.stat(path).st_mode & 0o777
+    except OSError:
+        mode = 0o644
+    fd, tmp = tempfile.mkstemp(prefix=f".{os.path.basename(path)}.", suffix=".tmp", dir=directory)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(content)
+            f.flush()
+            os.fsync(f.fileno())
+        os.chmod(tmp, mode)
+        os.replace(tmp, path)
+    except Exception:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
 
-    with open("weather.json", "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-    write_history(data)
-    with open("weather.txt", "w", encoding="utf-8") as f:
-        f.write(render_text(data, rows))
-    with open("badge.svg", "w", encoding="utf-8") as f:
-        f.write(render_badge(data))
-    with open("index.html", "w", encoding="utf-8") as f:
-        f.write(render_html(data, rows))
+
+def validate_output(data):
+    required = ("schema_version", "generated_at", "valid_until", "run_status",
+                "composite_score", "composite_raw", "data_quality", "feed_health",
+                "tactical_posture", "pillars")
+    missing = [k for k in required if k not in data]
+    if missing:
+        raise ValueError(f"Output validation failed; missing: {', '.join(missing)}")
+    if not isinstance(data["composite_score"], int) or isinstance(data["composite_score"], bool):
+        raise ValueError("composite_score must be an int")
+    if not isinstance(data["composite_raw"], (int, float)) or not 0 <= data["composite_raw"] <= 100:
+        raise ValueError("composite_raw must be a number between 0 and 100")
+    if data["tactical_posture"]["grid_bots"]["status"] not in GRID_SEVERITY:
+        raise ValueError("Invalid grid status")
+    absent = [k for k in WEIGHTS if k not in data["pillars"]]
+    if absent:
+        raise ValueError(f"Output validation failed; pillars missing: {', '.join(absent)}")
+
+
+def export_files(data):
+    validate_output(data)
+    rows = pillar_rows(data["pillars"], data["feed_health"])
+    outputs = {
+        "weather.txt": render_text(data, rows),
+        "badge.svg": render_badge(data),
+        "index.html": render_html(data, rows),
+        "weather.json": json.dumps(data, indent=2, ensure_ascii=False),
+    }
+    # weather.json is the commit marker (and the next run's state): it goes last.
+    for name in ("weather.txt", "badge.svg", "index.html", "weather.json"):
+        atomic_write(name, outputs[name])
+    # History is best effort. The public files are already written at this point.
+    try:
+        append_history(data)
+    except Exception as exc:
+        log("ERROR", "HISTORY", f"could not append to {HISTORY_FILE}: {type(exc).__name__}: {exc}")
 
 
 if __name__ == "__main__":
-    print(f"[*] Running Market Weather Engine v{VERSION}...")
-    w = calculate_systemic_weather()
-    export_files(w)
-    print(f"[+] Complete: Score is {w['composite_score']}/100 -> {w['status']}")
+    log("INFO", "ENGINE", f"Running Market Weather Engine v{VERSION}")
+    try:
+        weather = calculate_systemic_weather()
+        export_files(weather)
+        log("INFO", "ENGINE",
+            f"Complete: {weather['composite_score']}/100 -> {weather['status']} / "
+            f"{weather['tactical_posture']['grid_bots']['status']}")
+    except Exception as exc:
+        log("ERROR", "ENGINE", f"Run failed, previous outputs stay in place: {type(exc).__name__}: {exc}")
+        raise
