@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "version": "3.6.3",
-  "timestamp": "2026-11-11 18:30 UTC",
-  "generated_at": "2026-11-11T18:30:34Z",
-  "valid_until": "2026-11-11T21:00:34Z",
+  "timestamp": "2026-11-11 19:00 UTC",
+  "generated_at": "2026-11-11T19:00:46Z",
+  "valid_until": "2026-11-11T21:30:46Z",
   "run_status": "COMPLETE",
-  "run_duration_seconds": 3.23,
-  "symbol": "☀️",
-  "composite_score": 23,
-  "composite_raw": 23.75,
-  "display_score": 23,
-  "status": "CLEAR SKIES",
-  "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
-  "color": "#00ff66",
+  "run_duration_seconds": 4.41,
+  "symbol": "⛅",
+  "composite_score": 25,
+  "composite_raw": 25.15,
+  "display_score": 25,
+  "status": "SCATTERED CLOUDS",
+  "desc": "Operational noise within standard ranges. No immediate systemic fracture.",
+  "color": "#ffcc00",
   "data_quality": {
     "status": "HIGH",
     "score": 100,
@@ -84,7 +84,7 @@
     "crypto_perps": {
       "status": "NOMINAL",
       "color": "#00ff66",
-      "action": "Neutral baseline funding (+8.2% APR)."
+      "action": "Moderate derivatives bias (-1.4% APR)."
     },
     "dark_pool": {
       "status": "ELEVATED",
@@ -100,14 +100,14 @@
   "pillars": {
     "market_volatility": {
       "score": 25,
-      "vix": 17.51,
+      "vix": 17.34,
       "move_index": 92.43,
       "fallback": false
     },
     "crypto_leverage": {
-      "score": 6,
-      "btc_funding_apr": 8.2,
-      "btc_oi_mil": 3011.2,
+      "score": 13,
+      "btc_funding_apr": -1.4,
+      "btc_oi_mil": 3023.2,
       "dvol_index": 39.0,
       "fallback": false,
       "hl_fallback": false,
@@ -145,14 +145,14 @@
     },
     "market_implied": {
       "score": 25,
-      "vix": 17.51,
+      "vix": 17.34,
       "move_index": 92.43,
       "fallback": false
     },
     "crypto_247": {
-      "score": 6,
-      "btc_funding_apr": 8.2,
-      "btc_oi_mil": 3011.2,
+      "score": 13,
+      "btc_funding_apr": -1.4,
+      "btc_oi_mil": 3023.2,
       "dvol_index": 39.0,
       "fallback": false,
       "hl_fallback": false,
