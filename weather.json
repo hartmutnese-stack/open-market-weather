@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-11-10 23:30 UTC",
+  "timestamp": "2026-11-11 00:00 UTC",
   "symbol": "\u26c5",
-  "composite_score": 31,
+  "composite_score": 30,
   "status": "SCATTERED CLOUDS",
   "desc": "Operational noise within standard ranges. No immediate systemic fracture.",
   "color": "#ffcc00",
@@ -50,8 +50,8 @@
     "crypto_247": {
       "score": 9,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 3005.1,
-      "dvol_index": 39.9,
+      "btc_oi_mil": 3000.1,
+      "dvol_index": 39.4,
       "fallback": false
     },
     "short_volume": {
@@ -74,8 +74,8 @@
       "fallback": true
     },
     "credit_statutory": {
-      "score": 64,
-      "sec_8k_filings": 16,
+      "score": 60,
+      "sec_8k_filings": 15,
       "fallback": false
     },
     "cognitive_physical": {

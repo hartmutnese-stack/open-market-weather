@@ -1,10 +1,10 @@
 
 ======================================================================
  OPEN MARKET WEATHER OBSERVATORY // HYBRID MACRO & CRYPTO
- 2026-11-10 23:30 UTC // STANDALONE HEURISTIC // PERIODIC RUN
+ 2026-11-11 00:00 UTC // STANDALONE HEURISTIC // PERIODIC RUN
 ======================================================================
 
- OVERALL STATUS : SCATTERED CLOUDS [Score: 31/100]
+ OVERALL STATUS : SCATTERED CLOUDS [Score: 30/100]
  CURRENT REGIME : Operational noise within standard ranges. No immediate systemic fracture.
 
  --- TACTICAL POSTURE (OPERATIONAL DIRECTIVES) ---
@@ -16,10 +16,10 @@
 
  --- 6 OPERATIONAL PILLARS ---
  [1] Market Volatility : Score 30/100 (VIX: 19.46 | MOVE: 92.43)
- [2] Crypto Leverage   : Score 9/100 (Funding: +11.0% APR | DVOL: 39.9%)
+ [2] Crypto Leverage   : Score 9/100 (Funding: +11.0% APR | DVOL: 39.4%)
  [3] Short Volume      : Score 79/100 (SPY Short: 57.9% | Date: 20261110)
  [4] Dollar Liquidity  : Score 10/100 (TGA: $850.0B | Swaps: $0.0B) [fallback]
- [5] Credit Stress     : Score 64/100 (SEC 8-K Accelerations: 16)
+ [5] Credit Stress     : Score 60/100 (SEC 8-K Accelerations: 15)
  [6] Odds and Ends     : Score 1/100 (Analyst Z: +0.0σ | Border: 20m) [fallback]
 
  API: curl -sL https://open-market-weather.hartmut-nese.workers.dev/weather.json
