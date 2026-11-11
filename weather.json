@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "version": "3.6.1",
-  "timestamp": "2026-11-11 11:30 UTC",
-  "generated_at": "2026-11-11T11:30:36Z",
-  "valid_until": "2026-11-11T14:00:36Z",
+  "version": "3.6.2",
+  "timestamp": "2026-11-11 11:33 UTC",
+  "generated_at": "2026-11-11T11:33:24Z",
+  "valid_until": "2026-11-11T14:03:24Z",
   "run_status": "COMPLETE",
-  "run_duration_seconds": 4.08,
+  "run_duration_seconds": 3.71,
   "symbol": "☀️",
   "composite_score": 24,
   "composite_raw": 24.25,
@@ -72,8 +72,8 @@
     "grid_bots": {
       "status": "CAUTION",
       "color": "#ffcc00",
-      "action": "Widen grid bands by 15-25%. Reduce leverage / lot sizes.",
-      "hysteresis": false,
+      "action": "Widen grid bands by 15-25%. Return band active (VIX 18.58 >= 18.5).",
+      "hysteresis": true,
       "confirmed_runs": 0
     },
     "dip_buying": {
@@ -84,7 +84,7 @@
     "crypto_perps": {
       "status": "NOMINAL",
       "color": "#00ff66",
-      "action": "Neutral baseline funding (+8.6% APR)."
+      "action": "Neutral baseline funding (+8.3% APR)."
     },
     "dark_pool": {
       "status": "ELEVATED",
@@ -106,8 +106,8 @@
     },
     "crypto_leverage": {
       "score": 6,
-      "btc_funding_apr": 8.6,
-      "btc_oi_mil": 3039.8,
+      "btc_funding_apr": 8.3,
+      "btc_oi_mil": 3041.1,
       "dvol_index": 39.2,
       "fallback": false,
       "hl_fallback": false,
@@ -151,8 +151,8 @@
     },
     "crypto_247": {
       "score": 6,
-      "btc_funding_apr": 8.6,
-      "btc_oi_mil": 3039.8,
+      "btc_funding_apr": 8.3,
+      "btc_oi_mil": 3041.1,
       "dvol_index": 39.2,
       "fallback": false,
       "hl_fallback": false,
