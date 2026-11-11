@@ -32,7 +32,7 @@ jobs:
           # WICHTIG: history.csv hier mit aufnehmen:
           git add index.html weather.json weather.txt badge.svg history.csv
           if ! git diff --staged --quiet; then
-            git commit -m "Auto-Update: Market weather updated [skip ci]"
+            git commit -m "Auto-Update: Market weather updated"
             git pull --rebase origin main
             git push
           fi
