@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-11 02:30 UTC",
+  "timestamp": "2026-11-11 03:00 UTC",
   "symbol": "\u26c5",
   "composite_score": 30,
   "status": "SCATTERED CLOUDS",
@@ -27,7 +27,7 @@
     "crypto_perps": {
       "status": "NOMINAL",
       "color": "#00ff66",
-      "action": "Moderate derivatives leverage (BTC funding: +9.5% APR)."
+      "action": "Moderate derivatives leverage (BTC funding: +11.0% APR)."
     },
     "dark_pool": {
       "status": "ELEVATED",
@@ -48,9 +48,9 @@
       "fallback": false
     },
     "crypto_247": {
-      "score": 8,
-      "btc_funding_apr": 9.5,
-      "btc_oi_mil": 2987.5,
+      "score": 9,
+      "btc_funding_apr": 11.0,
+      "btc_oi_mil": 2959.9,
       "dvol_index": 40.2,
       "fallback": false
     },
