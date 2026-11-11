@@ -1,11 +1,24 @@
 {
-  "version": "3.5.1",
-  "timestamp": "2026-11-11 10:30 UTC",
+  "schema_version": 1,
+  "version": "3.6.1",
+  "timestamp": "2026-11-11 10:37 UTC",
+  "generated_at": "2026-11-11T10:37:26Z",
+  "valid_until": "2026-11-11T13:07:26Z",
+  "run_status": "COMPLETE",
+  "run_duration_seconds": 3.41,
   "symbol": "☀️",
   "composite_score": 24,
+  "composite_raw": 24.25,
+  "display_score": 24,
   "status": "CLEAR SKIES",
   "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
   "color": "#00ff66",
+  "data_quality": {
+    "status": "HIGH",
+    "score": 100,
+    "fallback_count": 0,
+    "degraded_feeds": []
+  },
   "fallback_flags": {
     "market_volatility": false,
     "crypto_leverage": false,
@@ -14,12 +27,54 @@
     "credit_stress": false,
     "odds_and_ends": false
   },
+  "feed_health": {
+    "yahoo": {
+      "status": "OK"
+    },
+    "hyperliquid": {
+      "status": "OK"
+    },
+    "deribit": {
+      "status": "OK"
+    },
+    "finra": {
+      "status": "OK"
+    },
+    "tga": {
+      "status": "OK"
+    },
+    "ny_fed": {
+      "status": "OK"
+    },
+    "sec": {
+      "status": "OK"
+    },
+    "wikipedia": {
+      "status": "OK",
+      "detail": "5/6 articles usable"
+    },
+    "cbp": {
+      "status": "CLOSED",
+      "detail": "Laredo feed reachable; no delay value"
+    }
+  },
+  "transition": {
+    "previous_status": "CAUTION",
+    "candidate_status": "CAUTION",
+    "required_runs": 2,
+    "cold_start": false,
+    "confirmed_runs": 0,
+    "recovering": false,
+    "recovery_target": null,
+    "status_changed": false
+  },
   "tactical_posture": {
     "grid_bots": {
       "status": "CAUTION",
       "color": "#ffcc00",
       "action": "Widen grid bands by 15-25%. Reduce leverage / lot sizes.",
-      "hysteresis": true
+      "hysteresis": false,
+      "confirmed_runs": 0
     },
     "dip_buying": {
       "status": "DEFENSIVE",
@@ -29,7 +84,7 @@
     "crypto_perps": {
       "status": "NOMINAL",
       "color": "#00ff66",
-      "action": "Moderate derivatives bias (+7.5% APR)."
+      "action": "Neutral baseline funding (+9.0% APR)."
     },
     "dark_pool": {
       "status": "ELEVATED",
@@ -39,7 +94,7 @@
     "collateral": {
       "status": "STABLE",
       "color": "#00ff66",
-      "action": "No meaningful central bank swap usage."
+      "action": "No meaningful central bank swap operations."
     }
   },
   "pillars": {
@@ -50,10 +105,10 @@
       "fallback": false
     },
     "crypto_leverage": {
-      "score": 7,
-      "btc_funding_apr": 7.5,
-      "btc_oi_mil": 3013.7,
-      "dvol_index": 39.2,
+      "score": 6,
+      "btc_funding_apr": 9.0,
+      "btc_oi_mil": 2977.0,
+      "dvol_index": 39.1,
       "fallback": false,
       "hl_fallback": false,
       "dvol_fallback": false
@@ -83,6 +138,7 @@
       "wiki_z": 0.23,
       "wiki_articles_ok": 5,
       "border_wait_m": null,
+      "border_state": "CLOSED",
       "fallback": false,
       "wiki_fallback": false,
       "cbp_fallback": false
@@ -94,10 +150,10 @@
       "fallback": false
     },
     "crypto_247": {
-      "score": 7,
-      "btc_funding_apr": 7.5,
-      "btc_oi_mil": 3013.7,
-      "dvol_index": 39.2,
+      "score": 6,
+      "btc_funding_apr": 9.0,
+      "btc_oi_mil": 2977.0,
+      "dvol_index": 39.1,
       "fallback": false,
       "hl_fallback": false,
       "dvol_fallback": false
@@ -127,6 +183,7 @@
       "wiki_z": 0.23,
       "wiki_articles_ok": 5,
       "border_wait_m": null,
+      "border_state": "CLOSED",
       "fallback": false,
       "wiki_fallback": false,
       "cbp_fallback": false

@@ -25,6 +25,10 @@
         .status-symbol { font-size: 3.8rem; line-height: 1; margin-bottom: 0.6rem; display: block; }
         .status-title { font-size: 1.5rem; color: #00ff66; margin: 0 0 0.5rem 0; font-weight: bold; }
         .status-desc { color: #9ca3af; font-size: 0.95rem; max-width: 650px; margin: auto; }
+        .quality { margin-top: 0.8rem; font-size: 0.85rem; font-weight: bold; }
+        .q-high { color: #00ff66; }
+        .q-medium { color: #ffcc00; }
+        .q-low { color: #ff6600; }
         .posture-card { border: 1px solid #2d3748; background: #0d1117; padding: 1.25rem; margin-bottom: 2rem; border-radius: 4px; }
         .posture-title { font-size: 0.9rem; font-weight: bold; color: #e2e8f0; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px dashed #2d3748; padding-bottom: 0.5rem; margin-bottom: 0.75rem; }
         .posture-item { display: flex; justify-content: space-between; align-items: baseline; padding: 0.5rem 0; border-bottom: 1px solid #161b22; font-size: 0.9rem; }
@@ -53,7 +57,8 @@
 <body>
     <div class="header">
         <strong>OPEN MARKET WEATHER OBSERVATORY</strong><br>
-        <span class="badge-sub">TIMESTAMP: 2026-11-11 10:30 UTC // PERIODIC RUN // v3.5.1</span>
+        <span class="badge-sub">TIMESTAMP: 2026-11-11 10:37 UTC // COMPLETE // v3.6.1</span><br>
+        <span class="badge-sub">VALID UNTIL: 2026-11-11T13:07:26Z</span>
         <div class="header-links">
             <a href="weather.json">[Raw JSON API]</a> &nbsp;|&nbsp;
             <a href="weather.txt">[Plaintext for cURL]</a> &nbsp;|&nbsp;
@@ -65,6 +70,7 @@
         <span class="status-symbol">☀️</span>
         <div class="status-title">CLEAR SKIES (SCORE: 24/100)</div>
         <div class="status-desc">Systemic friction minimal. Normal market conditions across macro and crypto feeds.</div>
+        <div class="quality q-high">DATA QUALITY: HIGH (100/100)</div>
     </div>
 
     <div class="posture-card">
@@ -82,7 +88,7 @@
         <div class="posture-item">
             <span class="posture-label">CRYPTO PERPS</span>
             <span class="posture-status" style="color: #00ff66">NOMINAL</span>
-            <span class="posture-action">Moderate derivatives bias (+7.5% APR).</span>
+            <span class="posture-action">Neutral baseline funding (+9.0% APR).</span>
         </div>
         <div class="posture-item">
             <span class="posture-label">SHORT VOLUME</span>
@@ -92,7 +98,7 @@
         <div class="posture-item">
             <span class="posture-label">COLLATERAL</span>
             <span class="posture-status" style="color: #00ff66">STABLE</span>
-            <span class="posture-action">No meaningful central bank swap usage.</span>
+            <span class="posture-action">No meaningful central bank swap operations.</span>
         </div>
     </div>
 
@@ -112,8 +118,8 @@
                 <tr>
                     <td><strong>2. Crypto Leverage</strong></td>
                     <td>Hyperliquid BTC funding + Deribit DVOL</td>
-                    <td>Funding: +7.5% APR | DVOL: 39.2%</td>
-                    <td><span class="score-pill">7/100</span></td>
+                    <td>Funding: +9.0% APR | DVOL: 39.1%</td>
+                    <td><span class="score-pill">6/100</span></td>
                 </tr>
                 <tr>
                     <td><strong>3. Short Volume</strong></td>
@@ -144,7 +150,7 @@
     </div>
 
     <div class="footer">
-        Open market metrics. Built with Python stdlib on Cloudflare and GitHub Actions. No financial advice.<br>
+        Open market metrics. Built with Python stdlib on Cloudflare and GitHub Actions. Files are written atomically. No financial advice.<br>
         CLI access: <code>curl -sL https://open-market-weather.hartmut-nese.workers.dev/weather.txt</code>
     </div>
 </body>
