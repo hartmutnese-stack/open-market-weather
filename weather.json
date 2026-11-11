@@ -1,6 +1,6 @@
 {
   "version": "3.5.1",
-  "timestamp": "2026-11-11 08:30 UTC",
+  "timestamp": "2026-11-11 08:38 UTC",
   "symbol": "☀️",
   "composite_score": 23,
   "status": "CLEAR SKIES",
@@ -45,14 +45,14 @@
   "pillars": {
     "market_volatility": {
       "score": 28,
-      "vix": 18.81,
+      "vix": 18.78,
       "move_index": 92.43,
       "fallback": false
     },
     "crypto_leverage": {
       "score": 4,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 2977.5,
+      "btc_oi_mil": 3004.9,
       "dvol_index": 39.3,
       "fallback": false,
       "hl_fallback": false,
@@ -89,14 +89,14 @@
     },
     "market_implied": {
       "score": 28,
-      "vix": 18.81,
+      "vix": 18.78,
       "move_index": 92.43,
       "fallback": false
     },
     "crypto_247": {
       "score": 4,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 2977.5,
+      "btc_oi_mil": 3004.9,
       "dvol_index": 39.3,
       "fallback": false,
       "hl_fallback": false,
