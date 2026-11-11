@@ -29,9 +29,10 @@ jobs:
         run: |
           git config --global user.name "MarketWeatherBot"
           git config --global user.email "bot@marktwetter.org"
-          git add index.html weather.json weather.txt badge.svg
+          # WICHTIG: history.csv hier mit aufnehmen:
+          git add index.html weather.json weather.txt badge.svg history.csv
           if ! git diff --staged --quiet; then
-            git commit -m "Auto-Update: Market weather updated"
+            git commit -m "Auto-Update: Market weather updated [skip ci]"
             git pull --rebase origin main
             git push
           fi
