@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "version": "3.6.3",
-  "timestamp": "2026-11-11 13:30 UTC",
-  "generated_at": "2026-11-11T13:30:36Z",
-  "valid_until": "2026-11-11T16:00:36Z",
+  "timestamp": "2026-11-11 14:00 UTC",
+  "generated_at": "2026-11-11T14:00:46Z",
+  "valid_until": "2026-11-11T16:30:46Z",
   "run_status": "COMPLETE",
-  "run_duration_seconds": 3.56,
-  "symbol": "⛅",
-  "composite_score": 25,
-  "composite_raw": 25.15,
-  "display_score": 25,
-  "status": "SCATTERED CLOUDS",
-  "desc": "Operational noise within standard ranges. No immediate systemic fracture.",
-  "color": "#ffcc00",
+  "run_duration_seconds": 3.73,
+  "symbol": "☀️",
+  "composite_score": 23,
+  "composite_raw": 23.75,
+  "display_score": 23,
+  "status": "CLEAR SKIES",
+  "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
+  "color": "#00ff66",
   "data_quality": {
     "status": "HIGH",
     "score": 100,
@@ -85,7 +85,7 @@
     "crypto_perps": {
       "status": "NOMINAL",
       "color": "#00ff66",
-      "action": "Moderate derivatives bias (+2.9% APR)."
+      "action": "Neutral baseline funding (+11.0% APR)."
     },
     "dark_pool": {
       "status": "ELEVATED",
@@ -100,15 +100,15 @@
   },
   "pillars": {
     "market_volatility": {
-      "score": 28,
-      "vix": 18.45,
+      "score": 27,
+      "vix": 18.38,
       "move_index": 92.43,
       "fallback": false
     },
     "crypto_leverage": {
-      "score": 10,
-      "btc_funding_apr": 2.9,
-      "btc_oi_mil": 3052.2,
+      "score": 4,
+      "btc_funding_apr": 11.0,
+      "btc_oi_mil": 3045.6,
       "dvol_index": 40.0,
       "fallback": false,
       "hl_fallback": false,
@@ -145,15 +145,15 @@
       "cbp_fallback": false
     },
     "market_implied": {
-      "score": 28,
-      "vix": 18.45,
+      "score": 27,
+      "vix": 18.38,
       "move_index": 92.43,
       "fallback": false
     },
     "crypto_247": {
-      "score": 10,
-      "btc_funding_apr": 2.9,
-      "btc_oi_mil": 3052.2,
+      "score": 4,
+      "btc_funding_apr": 11.0,
+      "btc_oi_mil": 3045.6,
       "dvol_index": 40.0,
       "fallback": false,
       "hl_fallback": false,
