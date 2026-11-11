@@ -1,4 +1,1 @@
-- name: Run Market Weather Engine
-        env:
-          OMW_CONTACT: "hartmut.nese@gmail.com"  # <- hier eintragen
-        run: python engine.py
+
