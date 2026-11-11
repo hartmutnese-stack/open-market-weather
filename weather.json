@@ -1,23 +1,25 @@
 {
-  "timestamp": "2026-11-11 08:00 UTC",
-  "symbol": "\u26c5",
-  "composite_score": 31,
-  "status": "SCATTERED CLOUDS",
-  "desc": "Operational noise within standard ranges. No immediate systemic fracture.",
-  "color": "#ffcc00",
+  "version": "3.5.1",
+  "timestamp": "2026-11-11 08:12 UTC",
+  "symbol": "☀️",
+  "composite_score": 21,
+  "status": "CLEAR SKIES",
+  "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
+  "color": "#00ff66",
   "fallback_flags": {
     "market_volatility": false,
     "crypto_leverage": false,
     "short_volume": false,
     "dollar_liquidity": false,
-    "credit_stress": false,
+    "credit_stress": true,
     "odds_and_ends": false
   },
   "tactical_posture": {
     "grid_bots": {
-      "status": "ACTIVE",
-      "color": "#00ff66",
-      "action": "Calm conditions. Standard grid parameters."
+      "status": "CAUTION",
+      "color": "#ffcc00",
+      "action": "Widen grid bands by 15-25%. Upstream fallback data active on one or more feeds.",
+      "hysteresis": false
     },
     "dip_buying": {
       "status": "DEFENSIVE",
@@ -27,7 +29,7 @@
     "crypto_perps": {
       "status": "NOMINAL",
       "color": "#00ff66",
-      "action": "Moderate derivatives leverage (BTC funding: +11.0% APR)."
+      "action": "Neutral baseline funding (+11.0% APR)."
     },
     "dark_pool": {
       "status": "ELEVATED",
@@ -37,10 +39,54 @@
     "collateral": {
       "status": "STABLE",
       "color": "#00ff66",
-      "action": "No central bank emergency swap usage."
+      "action": "No meaningful central bank swap usage."
     }
   },
   "pillars": {
+    "market_volatility": {
+      "score": 30,
+      "vix": 19.46,
+      "move_index": 92.43,
+      "fallback": false
+    },
+    "crypto_leverage": {
+      "score": 4,
+      "btc_funding_apr": 11.0,
+      "btc_oi_mil": 2995.9,
+      "dvol_index": 39.4,
+      "fallback": false,
+      "hl_fallback": false,
+      "dvol_fallback": false
+    },
+    "short_volume": {
+      "score": 57,
+      "spy_short_volume_ratio": 57.9,
+      "report_date": "20261110",
+      "fallback": false
+    },
+    "dollar_liquidity": {
+      "score": 16,
+      "tga_billions": 922.6,
+      "tga_5d_flow": -15.6,
+      "swaps_billions": 0.0,
+      "fallback": false,
+      "tga_fallback": false,
+      "swaps_fallback": false
+    },
+    "credit_stress": {
+      "score": 18,
+      "sec_8k_filings": 11,
+      "fallback": true
+    },
+    "odds_and_ends": {
+      "score": 3,
+      "wiki_z": 0.23,
+      "wiki_articles_ok": 5,
+      "border_wait_m": null,
+      "fallback": false,
+      "wiki_fallback": false,
+      "cbp_fallback": false
+    },
     "market_implied": {
       "score": 30,
       "vix": 19.46,
@@ -48,20 +94,16 @@
       "fallback": false
     },
     "crypto_247": {
-      "score": 9,
+      "score": 4,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 3001.9,
+      "btc_oi_mil": 2995.9,
       "dvol_index": 39.4,
-      "fallback": false
-    },
-    "short_volume": {
-      "score": 79,
-      "spy_short_volume_ratio": 57.9,
-      "report_date": "20261110",
-      "fallback": false
+      "fallback": false,
+      "hl_fallback": false,
+      "dvol_fallback": false
     },
     "dark_pool_finra": {
-      "score": 79,
+      "score": 57,
       "spy_short_volume_ratio": 57.9,
       "report_date": "20261110",
       "fallback": false
@@ -71,24 +113,23 @@
       "tga_billions": 922.6,
       "tga_5d_flow": -15.6,
       "swaps_billions": 0.0,
-      "fallback": false
+      "fallback": false,
+      "tga_fallback": false,
+      "swaps_fallback": false
     },
     "credit_statutory": {
-      "score": 60,
-      "sec_8k_filings": 15,
-      "fallback": false
+      "score": 18,
+      "sec_8k_filings": 11,
+      "fallback": true
     },
     "cognitive_physical": {
-      "score": 1,
-      "wiki_z": 0.0,
-      "border_wait_m": 20,
-      "fallback": false
-    },
-    "odds_and_ends": {
-      "score": 1,
-      "wiki_z": 0.0,
-      "border_wait_m": 20,
-      "fallback": false
+      "score": 3,
+      "wiki_z": 0.23,
+      "wiki_articles_ok": 5,
+      "border_wait_m": null,
+      "fallback": false,
+      "wiki_fallback": false,
+      "cbp_fallback": false
     }
   }
 }

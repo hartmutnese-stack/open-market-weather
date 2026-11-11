@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>Market Weather (31/100)</title>
-    <meta name="description" content="A weather report for the markets based on public macro and crypto data feeds.">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='.9em'%20font-size='90'%3E⛅%3C/text%3E%3C/svg%3E">
+    <title>Market Weather (21/100)</title>
+    <meta name="description" content="A weather report for the markets, based on public macro and crypto data feeds.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='.9em'%20font-size='90'%3E☀️%3C/text%3E%3C/svg%3E">
     <style>
         * { box-sizing: border-box; }
         body {
@@ -21,71 +21,18 @@
         .header { border-bottom: 1px dashed #2d3748; padding-bottom: 1rem; margin-bottom: 1.5rem; }
         .header-links { margin-top: 0.8rem; font-size: 0.9rem; word-break: break-all; }
         .badge-sub { color: #718096; font-size: 0.8rem; }
-        .status-box {
-            border: 2px solid #ffcc00;
-            background: #111419;
-            padding: 1.5rem 1rem;
-            margin-bottom: 2rem;
-            text-align: center;
-            border-radius: 4px;
-        }
-        .status-symbol {
-            font-size: 3.8rem;
-            line-height: 1;
-            margin-bottom: 0.6rem;
-            display: block;
-        }
-        .status-title {
-            font-size: 1.5rem;
-            color: #ffcc00;
-            margin: 0 0 0.5rem 0;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-        .status-desc {
-            color: #9ca3af;
-            font-size: 0.95rem;
-            max-width: 650px;
-            margin: auto;
-        }
-        .posture-card {
-            border: 1px solid #2d3748;
-            background: #0d1117;
-            padding: 1.25rem;
-            margin-bottom: 2rem;
-            border-radius: 4px;
-        }
-        .posture-title {
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: #e2e8f0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 1px dashed #2d3748;
-            padding-bottom: 0.5rem;
-            margin-bottom: 0.75rem;
-        }
-        .posture-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #161b22;
-            font-size: 0.9rem;
-        }
+        .status-box { border: 2px solid #00ff66; background: #111419; padding: 1.5rem 1rem; margin-bottom: 2rem; text-align: center; border-radius: 4px; }
+        .status-symbol { font-size: 3.8rem; line-height: 1; margin-bottom: 0.6rem; display: block; }
+        .status-title { font-size: 1.5rem; color: #00ff66; margin: 0 0 0.5rem 0; font-weight: bold; }
+        .status-desc { color: #9ca3af; font-size: 0.95rem; max-width: 650px; margin: auto; }
+        .posture-card { border: 1px solid #2d3748; background: #0d1117; padding: 1.25rem; margin-bottom: 2rem; border-radius: 4px; }
+        .posture-title { font-size: 0.9rem; font-weight: bold; color: #e2e8f0; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px dashed #2d3748; padding-bottom: 0.5rem; margin-bottom: 0.75rem; }
+        .posture-item { display: flex; justify-content: space-between; align-items: baseline; padding: 0.5rem 0; border-bottom: 1px solid #161b22; font-size: 0.9rem; }
         .posture-item:last-child { border-bottom: none; }
         .posture-label { font-weight: bold; color: #a0aec0; width: 140px; flex-shrink: 0; }
-        .posture-status { font-weight: bold; width: 120px; flex-shrink: 0; }
+        .posture-status { font-weight: bold; width: 150px; flex-shrink: 0; }
         .posture-action { color: #cbd5e0; flex: 1; text-align: right; }
-        
-        .table-container {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            margin-top: 1rem;
-            border: 1px solid #1a202c;
-            border-radius: 4px;
-        }
+        .table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 1rem; border: 1px solid #1a202c; border-radius: 4px; }
         .table { width: 100%; border-collapse: collapse; min-width: 640px; }
         .table td, .table th { padding: 0.75rem 0.6rem; text-align: left; border-bottom: 1px solid #1a202c; }
         .table th { color: #718096; font-size: 0.8rem; text-transform: uppercase; background: #0d1117; }
@@ -95,48 +42,37 @@
         .score-pill { font-weight: bold; padding: 2px 8px; border-radius: 3px; background: #1a202c; white-space: nowrap; }
         .tag-fallback { color: #f59e0b; font-size: 0.75rem; margin-left: 6px; font-weight: normal; }
         code { background: #1a202c; padding: 2px 6px; border-radius: 3px; color: #e2e8f0; }
-
         @media (max-width: 640px) {
             body { padding: 1rem 0.75rem; }
-            .status-symbol { font-size: 3.2rem; }
-            .status-title { font-size: 1.3rem; }
-            .status-desc { font-size: 0.85rem; }
-            
-            .posture-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 4px;
-                padding: 0.6rem 0;
-            }
-            .posture-label { width: 100%; font-size: 0.8rem; }
-            .posture-status { width: 100%; font-size: 0.85rem; margin-bottom: 2px; }
+            .posture-item { flex-direction: column; align-items: flex-start; gap: 4px; padding: 0.6rem 0; }
+            .posture-label, .posture-status { width: 100%; }
             .posture-action { text-align: left; font-size: 0.85rem; color: #a0aec0; }
         }
-    </style>
+</style>
 </head>
 <body>
     <div class="header">
         <strong>OPEN MARKET WEATHER OBSERVATORY</strong><br>
-        <span class="badge-sub">TIMESTAMP: 2026-11-11 08:00 UTC // PERIODIC EDGE RUN // HEURISTIC MATRIX</span>
+        <span class="badge-sub">TIMESTAMP: 2026-11-11 08:12 UTC // PERIODIC RUN // v3.5.1</span>
         <div class="header-links">
-            <a href="weather.json">[Raw JSON API]</a> &nbsp;|&nbsp; 
-            <a href="weather.txt">[Plaintext for cURL]</a> &nbsp;|&nbsp; 
+            <a href="weather.json">[Raw JSON API]</a> &nbsp;|&nbsp;
+            <a href="weather.txt">[Plaintext for cURL]</a> &nbsp;|&nbsp;
             <a href="badge.svg">[Live SVG Badge]</a>
         </div>
     </div>
 
     <div class="status-box">
-        <span class="status-symbol">⛅</span>
-        <div class="status-title">SCATTERED CLOUDS (SCORE: 31/100)</div>
-        <div class="status-desc">Operational noise within standard ranges. No immediate systemic fracture.</div>
+        <span class="status-symbol">☀️</span>
+        <div class="status-title">CLEAR SKIES (SCORE: 21/100)</div>
+        <div class="status-desc">Systemic friction minimal. Normal market conditions across macro and crypto feeds.</div>
     </div>
 
     <div class="posture-card">
         <div class="posture-title">Tactical Posture // Suggestions for Trading Bots</div>
         <div class="posture-item">
             <span class="posture-label">GRID BOTS</span>
-            <span class="posture-status" style="color: #00ff66">ACTIVE</span>
-            <span class="posture-action">Calm conditions. Standard grid parameters.</span>
+            <span class="posture-status" style="color: #ffcc00">CAUTION</span>
+            <span class="posture-action">Widen grid bands by 15-25%. Upstream fallback data active on one or more feeds.</span>
         </div>
         <div class="posture-item">
             <span class="posture-label">DIP BUYING</span>
@@ -146,7 +82,7 @@
         <div class="posture-item">
             <span class="posture-label">CRYPTO PERPS</span>
             <span class="posture-status" style="color: #00ff66">NOMINAL</span>
-            <span class="posture-action">Moderate derivatives leverage (BTC funding: +11.0% APR).</span>
+            <span class="posture-action">Neutral baseline funding (+11.0% APR).</span>
         </div>
         <div class="posture-item">
             <span class="posture-label">SHORT VOLUME</span>
@@ -156,7 +92,7 @@
         <div class="posture-item">
             <span class="posture-label">COLLATERAL</span>
             <span class="posture-status" style="color: #00ff66">STABLE</span>
-            <span class="posture-action">No central bank emergency swap usage.</span>
+            <span class="posture-action">No meaningful central bank swap usage.</span>
         </div>
     </div>
 
@@ -164,49 +100,44 @@
     <div class="table-container">
         <table class="table">
             <thead>
-                <tr>
-                    <th>Pillar</th>
-                    <th>Underlying Feed</th>
-                    <th>Live Values</th>
-                    <th>Friction Score</th>
-                </tr>
+                <tr><th>Pillar</th><th>Underlying Feed</th><th>Live Values</th><th>Friction Score</th></tr>
             </thead>
             <tbody>
                 <tr>
                     <td><strong>1. Market Volatility</strong></td>
-                    <td>S&P 500 VIX + Treasury MOVE Index</td>
+                    <td>S&amp;P 500 VIX + Treasury MOVE Index</td>
                     <td>VIX: 19.46 | MOVE: 92.43</td>
                     <td><span class="score-pill">30/100</span></td>
                 </tr>
                 <tr>
                     <td><strong>2. Crypto Leverage</strong></td>
-                    <td>Hyperliquid BTC Funding + Deribit DVOL Index</td>
+                    <td>Hyperliquid BTC funding + Deribit DVOL</td>
                     <td>Funding: +11.0% APR | DVOL: 39.4%</td>
-                    <td><span class="score-pill">9/100</span></td>
+                    <td><span class="score-pill">4/100</span></td>
                 </tr>
                 <tr>
                     <td><strong>3. Short Volume</strong></td>
-                    <td>FINRA Reg SHO Daily Flat File (SPY)</td>
-                    <td>Short Ratio: 57.9% (20261110)</td>
-                    <td><span class="score-pill">79/100</span></td>
+                    <td>FINRA Reg SHO daily file (SPY)</td>
+                    <td>Short ratio: 57.9% (20261110)</td>
+                    <td><span class="score-pill">57/100</span></td>
                 </tr>
                 <tr>
                     <td><strong>4. Dollar Liquidity</strong></td>
-                    <td>U.S. TGA Cash + NY Fed Central Bank Swaps</td>
+                    <td>U.S. TGA cash + NY Fed swap lines</td>
                     <td>TGA: $922.6B | Swaps: $0.0B</td>
                     <td><span class="score-pill">16/100</span></td>
                 </tr>
                 <tr>
                     <td><strong>5. Credit Stress</strong></td>
-                    <td>SEC 8-K Form (Item 2.04 Acceleration - 14D)</td>
-                    <td>Active Filings: 15</td>
-                    <td><span class="score-pill">60/100</span></td>
+                    <td>SEC 8-K filings mentioning Item 2.04 (14 days)</td>
+                    <td>Filings: 11<span class="tag-fallback">[fallback: sec]</span></td>
+                    <td><span class="score-pill">18/100</span></td>
                 </tr>
                 <tr>
                     <td><strong>6. Odds and Ends</strong></td>
-                    <td>Wikimedia Crisis Traffic (6%) + CBP Laredo Freight (4%)</td>
-                    <td>Analyst Z: +0.0σ | Border: 20m</td>
-                    <td><span class="score-pill">1/100</span></td>
+                    <td>Wikipedia crisis traffic (6%) + CBP Laredo truck waits (4%)</td>
+                    <td>Wiki Z: +0.23σ | Border: closed / no data</td>
+                    <td><span class="score-pill">3/100</span></td>
                 </tr>
             </tbody>
         </table>
@@ -214,8 +145,7 @@
 
     <div class="footer">
         Open market metrics. Built with Python stdlib on Cloudflare and GitHub Actions. No financial advice.<br>
-        CLI Access: <code>curl -sL https://open-market-weather.hartmut-nese.workers.dev/weather.txt</code><br>
-        Bot Embed: <code>&lt;img src="https://open-market-weather.hartmut-nese.workers.dev/badge.svg"&gt;</code>
+        CLI access: <code>curl -sL https://open-market-weather.hartmut-nese.workers.dev/weather.txt</code>
     </div>
 </body>
 </html>
