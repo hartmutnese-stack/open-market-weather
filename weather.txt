@@ -1,7 +1,7 @@
 
 ======================================================================
  OPEN MARKET WEATHER OBSERVATORY // HYBRID MACRO & CRYPTO // v3.5.1
- 2026-11-11 09:00 UTC // STANDALONE HEURISTIC // PERIODIC RUN
+ 2026-11-11 09:30 UTC // STANDALONE HEURISTIC // PERIODIC RUN
 ======================================================================
 
  OVERALL STATUS : CLEAR SKIES [Score: 24/100]
@@ -10,13 +10,13 @@
  --- TACTICAL POSTURE (SUGGESTIONS FOR TRADING BOTS) ---
  [*] GRID BOTS    : CAUTION -> Widen grid bands by 15-25%. Reduce leverage / lot sizes.
  [*] DIP BUYING   : DEFENSIVE -> Support lines fragile. Do not catch falling knives.
- [*] CRYPTO PERPS : NOMINAL -> Neutral baseline funding (+9.0% APR).
+ [*] CRYPTO PERPS : NOMINAL -> Neutral baseline funding (+9.5% APR).
  [*] SHORT VOLUME : ELEVATED -> Elevated short volume share on SPY (57.9%).
  [*] COLLATERAL   : STABLE -> No meaningful central bank swap usage.
 
  --- 6 PILLARS ---
- [1] Market Volatility : Score 28/100 (VIX: 18.7 | MOVE: 92.43)
- [2] Crypto Leverage   : Score 6/100 (Funding: +9.0% APR | DVOL: 39.3%)
+ [1] Market Volatility : Score 28/100 (VIX: 18.78 | MOVE: 92.43)
+ [2] Crypto Leverage   : Score 5/100 (Funding: +9.5% APR | DVOL: 39.2%)
  [3] Short Volume      : Score 57/100 (Short ratio: 57.9% (20261110))
  [4] Dollar Liquidity  : Score 16/100 (TGA: $922.6B | Swaps: $0.0B)
  [5] Credit Stress     : Score 36/100 (Filings: 15)
