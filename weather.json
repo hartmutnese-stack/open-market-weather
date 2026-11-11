@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-11 07:49 UTC",
+  "timestamp": "2026-11-11 08:00 UTC",
   "symbol": "\u26c5",
   "composite_score": 31,
   "status": "SCATTERED CLOUDS",
@@ -50,7 +50,7 @@
     "crypto_247": {
       "score": 9,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 2995.9,
+      "btc_oi_mil": 3001.9,
       "dvol_index": 39.4,
       "fallback": false
     },
