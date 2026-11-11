@@ -2,18 +2,17 @@
 # -*- coding: utf-8 -*-
 """
 OPEN MARKET WEATHER OBSERVATORY // HYBRID MACRO & CRYPTO
-Version: 3.6.2 (stdlib only)
+Version: 3.6.3 (stdlib only)
 
-3.6.2 is a refinement release on top of 3.6.1. Changes:
-  - Precise Hysteresis Flag: Accurately flags both level-band constraints (e.g.
-    VIX holding CAUTION between 18.5 and 20.0) and confirmation streak delays.
-  - Granular Wikipedia Logging: Logs the specific article title and reason when
-    pageview observation thresholds (< 21 days) or HTTP fetches fail.
-  - Defensive Dashboard UI: Renamed posture directives from 'Suggestions for Trading Bots'
-    to 'Rule-Based Reference Heuristics', added explicit scope disclaimer, and
-    embedded direct GitHub repository link in the header.
-  - Standardized Disclaimer: Added explicit non-advisory, informational-only notices
-    across HTML and plaintext outputs to mitigate regulatory ambiguity.
+Changes in 3.6.3:
+  - Wikipedia: the series is aligned by calendar day (days without views count as
+    zero) instead of by list position, and articles with too little traffic for a
+    meaningful z-score are skipped with a log line.
+  - Cold start: when no recent state exists, the assumed status (OMW_COLD_START_STATUS)
+    now also decides which threshold band applies, not only the confirmation count.
+  - Return-band text names every condition that holds the status back.
+  - data_quality: fallback_count counts only fallback feeds, stale feeds have their
+    own stale_count.
 
 Optional environment variables:
   OMW_CONTACT                  Contact string for the User-Agent sent to SEC EDGAR and
@@ -74,7 +73,7 @@ def env_number(name, default, cast=float, minimum=None):
     return value
 
 
-VERSION = "3.6.2"
+VERSION = "3.6.3"
 SCHEMA_VERSION = 1
 BASE_URL = os.environ.get(
     "OMW_BASE_URL", "https://open-market-weather.hartmut-nese.workers.dev"
@@ -115,6 +114,9 @@ COLD_START_STATUS = _cold if _cold in GRID_SEVERITY else "CAUTION"
 
 # A feed whose newest data point is older than this (days) counts as STALE.
 MAX_AGE_DAYS = {"yahoo": 5, "finra": 4, "tga": 6}
+
+# Wikipedia: below this average of daily views a z-score is mostly noise.
+WIKI_MIN_BASELINE_AVG = 20.0
 
 HISTORY_FILE = "history.csv"
 HISTORY_HEADER = [
@@ -559,24 +561,46 @@ WIKI_ARTICLES = [
 ]
 
 
-def wikipedia_zscore(article, start_date, end_date):
-    """Mean of the last 7 days against the 3+ weeks before."""
+def wikipedia_zscore(article, start, end):
+    """Mean of the last 7 days against the 3+ weeks before. `start` and `end` are
+    dates. The series is built per calendar day: the API leaves out days it has no
+    views for, and those days count as zero. Aligning by list position instead
+    would shift the 7-day window whenever a day is missing."""
     url = (
         "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia.org/"
-        f"all-access/user/{article}/daily/{start_date}/{end_date}"
+        f"all-access/user/{article}/daily/{start.strftime('%Y%m%d')}/{end.strftime('%Y%m%d')}"
     )
     result = fetch_json(url, "WIKIPEDIA", timeout=5, headers=COMPLIANT_HEADERS)
     if not result.ok:
         log("WARN", "WIKIPEDIA", f"{article}: fetch failed ({result.error_type})")
         return None
     items = dig(result.data, "items")
-    if not isinstance(items, list) or len(items) < 21:
-        count = len(items) if isinstance(items, list) else 0
-        log("WARN", "WIKIPEDIA", f"{article}: only {count} observations available (needs 21)")
+    if not isinstance(items, list) or not items:
+        log("WARN", "WIKIPEDIA", f"{article}: response has no observations")
         return None
-    views = [x.get("views", 0) for x in items]
-    baseline, recent = views[:-7], views[-7:]
+
+    by_day = {}
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        stamp = str(item.get("timestamp", ""))[:8]
+        views = to_float(item.get("views"))
+        if len(stamp) == 8 and views is not None:
+            by_day[stamp] = views
+    n_days = (end - start).days + 1
+    series = [by_day.get((start + timedelta(days=i)).strftime("%Y%m%d"), 0.0)
+              for i in range(n_days)]
+    if len(series) < 21:
+        log("WARN", "WIKIPEDIA", f"{article}: window has only {len(series)} days (needs 21)")
+        return None
+
+    baseline, recent = series[:-7], series[-7:]
     avg_base = sum(baseline) / len(baseline)
+    if avg_base < WIKI_MIN_BASELINE_AVG:
+        log("WARN", "WIKIPEDIA",
+            f"{article}: low traffic ({avg_base:.1f} views/day, {len(items)}/{n_days} days "
+            f"with data), skipped")
+        return None
     std_base = math.sqrt(sum((x - avg_base) ** 2 for x in baseline) / len(baseline)) or 1
     return max(0.0, (sum(recent) / len(recent) - avg_base) / std_base)
 
@@ -610,12 +634,12 @@ def laredo_truck_wait():
 
 def get_odds_and_ends(feed_health):
     today = utc_now()
-    end_date = (today - timedelta(days=2)).strftime("%Y%m%d")      # latency buffer
-    start_date = (today - timedelta(days=32)).strftime("%Y%m%d")
+    end = (today - timedelta(days=2)).date()      # latency buffer
+    start = (today - timedelta(days=32)).date()
 
     zscores = []
     for article in WIKI_ARTICLES:
-        z = wikipedia_zscore(article, start_date, end_date)
+        z = wikipedia_zscore(article, start, end)
         if z is not None:
             zscores.append(z)
     wiki_fallback = not zscores
@@ -706,32 +730,34 @@ def previous_grid_status(prev):
 # ==============================================================================
 def data_quality(feed_health):
     score = 100
-    degraded = []
+    fallback, stale = [], []
     for name, item in feed_health.items():
         penalty = QUALITY_PENALTIES.get(name, 5)
         if item["status"] == "FALLBACK":
             score -= penalty
-            degraded.append(name)
+            fallback.append(name)
         elif item["status"] == "STALE":
             score -= max(1, penalty // 2)
-            degraded.append(name)
+            stale.append(name)
     score = clamp(score)
     status = "HIGH" if score >= 90 else ("MEDIUM" if score >= 70 else "LOW")
-    return {"status": status, "score": score, "fallback_count": len(degraded),
-            "degraded_feeds": degraded}
+    degraded = [n for n in feed_health if n in fallback or n in stale]
+    return {"status": status, "score": score, "fallback_count": len(fallback),
+            "stale_count": len(stale), "degraded_feeds": degraded}
 
 
 # ==============================================================================
 # GRID STATUS (level bands + run-count confirmation)
 # ==============================================================================
-def raw_grid_candidate(composite, p, clean, prev_status):
-    """What the grid status would be without confirmation delay."""
+def raw_grid_candidate(composite, p, clean, band_status):
+    """What the grid status would be without confirmation delay.
+    band_status decides which threshold band applies."""
     vix = p["market_volatility"]["vix"]
     crypto = p["crypto_leverage"]["score"]
-    pause_limit = PAUSE_STAY if prev_status == "PAUSED" else PAUSE_ENTER
+    pause_limit = PAUSE_STAY if band_status == "PAUSED" else PAUSE_ENTER
     if crypto >= pause_limit or composite >= pause_limit:
         return "PAUSED"
-    band = CALM_RETURN if prev_status in ("CAUTION", "PAUSED") else CALM_ENTER
+    band = CALM_RETURN if band_status in ("CAUTION", "PAUSED") else CALM_ENTER
     calm = composite < band["composite"] and vix < band["vix"] and crypto < band["crypto"]
     return "ACTIVE" if calm and clean else "CAUTION"
 
@@ -771,6 +797,18 @@ def resolve_grid_status(candidate, prev_status, prev_transition):
                       "recovery_target": target, "status_changed": False}
 
 
+def return_band_blockers(composite, vix, crypto_score):
+    """Conditions that keep the status out of ACTIVE under the stricter return band."""
+    blockers = []
+    if composite >= CALM_RETURN["composite"]:
+        blockers.append(f"overall {composite:.1f} >= {CALM_RETURN['composite']:g}")
+    if vix >= CALM_RETURN["vix"]:
+        blockers.append(f"VIX {vix:.2f} >= {CALM_RETURN['vix']:g}")
+    if crypto_score >= CALM_RETURN["crypto"]:
+        blockers.append(f"crypto {crypto_score} >= {CALM_RETURN['crypto']:g}")
+    return blockers
+
+
 # ==============================================================================
 # TACTICAL POSTURE
 # ==============================================================================
@@ -786,17 +824,18 @@ def generate_tactical_posture(composite, p, quality, prev):
     # 1. Grid bots
     prev_status = previous_grid_status(prev)
     prev_transition = dig(prev, "transition", default={})
+    # Without a recent state the assumed cold-start status also picks the band.
+    band_status = prev_status or COLD_START_STATUS
 
-    # Exact level band checks for hysteresis identification
     calm_enter = composite < CALM_ENTER["composite"] and vix < CALM_ENTER["vix"] and crypto_score < CALM_ENTER["crypto"]
     calm_return = composite < CALM_RETURN["composite"] and vix < CALM_RETURN["vix"] and crypto_score < CALM_RETURN["crypto"]
-    band_held_calm = (prev_status in ("CAUTION", "PAUSED")) and calm_enter and not calm_return
+    band_held_calm = band_status in ("CAUTION", "PAUSED") and calm_enter and not calm_return
 
     hot_enter = crypto_score >= PAUSE_ENTER or composite >= PAUSE_ENTER
     hot_stay = crypto_score >= PAUSE_STAY or composite >= PAUSE_STAY
-    band_held_pause = (prev_status == "PAUSED") and not hot_enter and hot_stay
+    band_held_pause = band_status == "PAUSED" and not hot_enter and hot_stay
 
-    candidate = raw_grid_candidate(composite, p, clean, prev_status)
+    candidate = raw_grid_candidate(composite, p, clean, band_status)
     grid_status, transition = resolve_grid_status(candidate, prev_status, prev_transition)
     streak_held = grid_status != candidate
     held = band_held_calm or band_held_pause or streak_held
@@ -807,7 +846,7 @@ def generate_tactical_posture(composite, p, quality, prev):
 
     if grid_status == "PAUSED" and streak_held:
         action = f"Staying paused: recovery pending ({pending})."
-    elif grid_status == "PAUSED" and prev_status == "PAUSED" and not hot_enter:
+    elif grid_status == "PAUSED" and band_status == "PAUSED" and not hot_enter:
         action = f"Staying paused until the overall and crypto scores fall below {PAUSE_STAY:g}."
     elif grid_status == "PAUSED":
         action = (f"Pause new grid bids. Dislocation risk elevated "
@@ -815,7 +854,8 @@ def generate_tactical_posture(composite, p, quality, prev):
     elif grid_status == "ACTIVE":
         action = "Calm conditions. Standard grid parameters."
     elif band_held_calm:
-        action = f"Widen grid bands by 15-25%. Return band active (VIX {vix:.2f} >= {CALM_RETURN['vix']:.1f})."
+        reasons = ", ".join(return_band_blockers(composite, vix, crypto_score))
+        action = f"Widen grid bands by 15-25%. Return band active ({reasons})."
     elif streak_held:
         action = f"Widen grid bands by 15-25%. Recovery pending ({pending})."
     elif not clean:
@@ -1208,7 +1248,7 @@ def render_html(data, rows):
     </div>
 
     <div class="footer">
-        Open market metrics. Built with Python stdlib on Cloudflare and GitHub Actions. Atomic file persistence.<br>
+        Open market metrics. Built with Python stdlib on Cloudflare and GitHub Actions.<br>
         STRICTLY INFORMATIONAL &amp; EXPERIMENTAL. No investment advice, trade signals, or commercial solicitation. All metrics are heuristic, derived, and subject to latency.<br>
         CLI access: <code>curl -sL {esc(BASE_URL)}/weather.txt</code>
     </div>
