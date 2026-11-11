@@ -1,8 +1,8 @@
 {
   "version": "3.5.1",
-  "timestamp": "2026-11-11 10:00 UTC",
+  "timestamp": "2026-11-11 10:30 UTC",
   "symbol": "☀️",
-  "composite_score": 23,
+  "composite_score": 24,
   "status": "CLEAR SKIES",
   "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
   "color": "#00ff66",
@@ -29,7 +29,7 @@
     "crypto_perps": {
       "status": "NOMINAL",
       "color": "#00ff66",
-      "action": "Neutral baseline funding (+11.0% APR)."
+      "action": "Moderate derivatives bias (+7.5% APR)."
     },
     "dark_pool": {
       "status": "ELEVATED",
@@ -45,14 +45,14 @@
   "pillars": {
     "market_volatility": {
       "score": 28,
-      "vix": 18.72,
+      "vix": 18.69,
       "move_index": 92.43,
       "fallback": false
     },
     "crypto_leverage": {
-      "score": 4,
-      "btc_funding_apr": 11.0,
-      "btc_oi_mil": 3012.5,
+      "score": 7,
+      "btc_funding_apr": 7.5,
+      "btc_oi_mil": 3013.7,
       "dvol_index": 39.2,
       "fallback": false,
       "hl_fallback": false,
@@ -89,14 +89,14 @@
     },
     "market_implied": {
       "score": 28,
-      "vix": 18.72,
+      "vix": 18.69,
       "move_index": 92.43,
       "fallback": false
     },
     "crypto_247": {
-      "score": 4,
-      "btc_funding_apr": 11.0,
-      "btc_oi_mil": 3012.5,
+      "score": 7,
+      "btc_funding_apr": 7.5,
+      "btc_oi_mil": 3013.7,
       "dvol_index": 39.2,
       "fallback": false,
       "hl_fallback": false,
