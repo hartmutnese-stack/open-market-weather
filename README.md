@@ -37,7 +37,9 @@ The daily FINRA file is around 15 MB, so the script streams it line by line inst
 - **Treasury cash moves both ways.** The liquidity score spikes on large swings in either direction, whether the government is draining or injecting reserves.
 - **Wikipedia is experimental.** Page views drop on weekends and follow school terms, so I keep its weight small: 60% of a pillar that is worth 10%, which makes 6% of the total.
 - **Different clocks.** Crypto data is real-time. FINRA and Treasury numbers arrive once a day with a lag.
-- **Fallbacks and unofficial endpoints.** Yahoo, CBP and SEC search are unofficial interfaces that can break. If an upstream request fails, the script substitutes a hard-coded default (like VIX 16.5). The `weather.json` payload flags active fallbacks under `fallback_flags`, and the dashboard displays `[fallback]` next to affected values. Furthermore, the bot directive never signals ACTIVE if any feed is operating on fallback data.
+- **Thresholds are guesses.** All the scaling ranges and cutoffs are hand-picked. Expect some pillars to sit higher or lower than they should until someone calibrates them against real history.
+- **Unofficial endpoints.** Yahoo, CBP and SEC search are unofficial interfaces that can break without notice.
+- **Fallbacks.** If a feed fails, the script uses a hard-coded default (like VIX 16.5). `weather.json` lists affected pillars under `fallback_flags`, and the dashboard shows `[fallback]` next to their values. The flags don't cover everything yet: the swap lines and the CBP border data aren't flagged on their own, so a stuck `border_wait_m: 20` is worth a look in the run log. The bot directive never says ACTIVE while any flagged feed is on fallback data.
 
 ## Run it
 
@@ -49,12 +51,14 @@ python3 engine.py
 
 Python 3.8+, standard library only. It writes `index.html`, `weather.json`, `weather.txt`, and `badge.svg` into the current folder. I run it hourly via GitHub Actions and serve it from Cloudflare for free.
 
+If you fork it, put your own contact address into `COMPLIANT_HEADERS` in `engine.py`. SEC EDGAR and Wikimedia ask for one and may block requests without it.
+
 ## Using it in a bot
 
 `weather.json` includes a `tactical_posture` block with plain-language suggestions for trading bots. For grid bots, it works like this:
 
 - **PAUSED** if the crypto score is above 65 or the overall score is 65 or higher.
-- **ACTIVE** if the overall score is below 35, VIX is below 20, the crypto score is below 40, and no upstream fallbacks are active.
+- **ACTIVE** if the overall score is below 35, VIX is below 20, the crypto score is below 40, and no flagged feed is on fallback data.
 - **CAUTION** for anything in between.
 
 A calm overall score can still land on CAUTION if VIX is above 20 or crypto leverage is elevated, as in this trimmed example:
@@ -65,6 +69,14 @@ A calm overall score can still land on CAUTION if VIX is above 20 or crypto leve
   "symbol": "☀️",
   "composite_score": 19,
   "status": "CLEAR SKIES",
+  "fallback_flags": {
+    "market_volatility": false,
+    "crypto_leverage": false,
+    "short_volume": false,
+    "dollar_liquidity": false,
+    "credit_stress": false,
+    "odds_and_ends": false
+  },
   "tactical_posture": {
     "grid_bots": {
       "status": "CAUTION",
@@ -94,6 +106,8 @@ async def check_macro_circuit_breaker():
     except Exception:
         pass
 ```
+
+Near the thresholds the status can flip back and forth (VIX around 20, for example), so don't rebuild your grid on every change.
 
 ## Contributing
 
