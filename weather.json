@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "version": "3.6.5",
-  "timestamp": "2026-11-12 22:00 UTC",
-  "generated_at": "2026-11-12T22:00:48Z",
-  "valid_until": "2026-11-13T00:30:48Z",
+  "timestamp": "2026-11-12 22:30 UTC",
+  "generated_at": "2026-11-12T22:30:38Z",
+  "valid_until": "2026-11-13T01:00:38Z",
   "run_status": "COMPLETE",
-  "run_duration_seconds": 4.84,
+  "run_duration_seconds": 3.67,
   "symbol": "☀️",
-  "composite_score": 24,
-  "composite_raw": 24.1,
-  "display_score": 24,
+  "composite_score": 23,
+  "composite_raw": 23.5,
+  "display_score": 23,
   "status": "CLEAR SKIES",
   "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
   "color": "#00ff66",
@@ -91,7 +91,7 @@
     "dark_pool": {
       "status": "ELEVATED",
       "color": "#ffcc00",
-      "action": "Elevated short volume share on SPY (53.3%)."
+      "action": "Elevated short volume share on SPY (52.5%)."
     },
     "collateral": {
       "status": "STABLE",
@@ -109,16 +109,16 @@
     "crypto_leverage": {
       "score": 4,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 2829.8,
-      "dvol_index": 39.5,
+      "btc_oi_mil": 2832.5,
+      "dvol_index": 39.6,
       "fallback": false,
       "hl_fallback": false,
       "dvol_fallback": false
     },
     "short_volume": {
-      "score": 34,
-      "spy_short_volume_ratio": 53.3,
-      "report_date": "20261111",
+      "score": 30,
+      "spy_short_volume_ratio": 52.5,
+      "report_date": "20261112",
       "fallback": false
     },
     "dollar_liquidity": {
@@ -154,16 +154,16 @@
     "crypto_247": {
       "score": 4,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 2829.8,
-      "dvol_index": 39.5,
+      "btc_oi_mil": 2832.5,
+      "dvol_index": 39.6,
       "fallback": false,
       "hl_fallback": false,
       "dvol_fallback": false
     },
     "dark_pool_finra": {
-      "score": 34,
-      "spy_short_volume_ratio": 53.3,
-      "report_date": "20261111",
+      "score": 30,
+      "spy_short_volume_ratio": 52.5,
+      "report_date": "20261112",
       "fallback": false
     },
     "liquidity_plumbing": {
