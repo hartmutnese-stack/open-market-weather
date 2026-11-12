@@ -1,32 +1,30 @@
 {
   "schema_version": 1,
   "version": "3.6.5",
-  "timestamp": "2026-11-12 23:01 UTC",
-  "generated_at": "2026-11-12T23:01:19Z",
-  "valid_until": "2026-11-13T01:31:19Z",
-  "run_status": "DEGRADED",
-  "run_duration_seconds": 24.8,
+  "timestamp": "2026-11-12 23:30 UTC",
+  "generated_at": "2026-11-12T23:30:39Z",
+  "valid_until": "2026-11-13T02:00:39Z",
+  "run_status": "COMPLETE",
+  "run_duration_seconds": 4.0,
   "symbol": "☀️",
-  "composite_score": 20,
-  "composite_raw": 20.5,
-  "display_score": 20,
+  "composite_score": 23,
+  "composite_raw": 23.5,
+  "display_score": 23,
   "status": "CLEAR SKIES",
   "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
   "color": "#00ff66",
   "data_quality": {
-    "status": "MEDIUM",
-    "score": 85,
-    "fallback_count": 1,
+    "status": "HIGH",
+    "score": 100,
+    "fallback_count": 0,
     "stale_count": 0,
-    "degraded_feeds": [
-      "tga"
-    ]
+    "degraded_feeds": []
   },
   "fallback_flags": {
     "market_volatility": false,
     "crypto_leverage": false,
     "short_volume": false,
-    "dollar_liquidity": true,
+    "dollar_liquidity": false,
     "credit_stress": false,
     "odds_and_ends": false
   },
@@ -44,8 +42,7 @@
       "status": "OK"
     },
     "tga": {
-      "status": "FALLBACK",
-      "error_type": "TIMEOUT"
+      "status": "OK"
     },
     "ny_fed": {
       "status": "OK"
@@ -69,22 +66,22 @@
     "confirmed_runs": 0,
     "recovering": false,
     "recovery_target": null,
-    "status_changed": true,
+    "status_changed": false,
     "market_status": "ACTIVE",
-    "clean_runs": 0
+    "clean_runs": 1
   },
   "tactical_posture": {
     "grid_bots": {
       "status": "CAUTION",
       "color": "#ffcc00",
-      "action": "Reference: wider grid bands (+15-25%). Upstream data quality is degraded.",
-      "hysteresis": false,
+      "action": "Reference: wider grid bands (+15-25%). Data quality recovering (1/2 clean runs).",
+      "hysteresis": true,
       "confirmed_runs": 0
     },
     "dip_buying": {
-      "status": "DEFENSIVE",
-      "color": "#ff6600",
-      "action": "Support looks fragile; falling-knife risk is elevated."
+      "status": "FAVORABLE",
+      "color": "#00ff66",
+      "action": "Orderly pullbacks. Liquidity supports absorption."
     },
     "crypto_perps": {
       "status": "NOMINAL",
@@ -112,8 +109,8 @@
     "crypto_leverage": {
       "score": 4,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 2816.0,
-      "dvol_index": 39.7,
+      "btc_oi_mil": 2821.6,
+      "dvol_index": 40.1,
       "fallback": false,
       "hl_fallback": false,
       "dvol_fallback": false
@@ -125,12 +122,12 @@
       "fallback": false
     },
     "dollar_liquidity": {
-      "score": 10,
-      "tga_billions": 850.0,
-      "tga_5d_flow": 0.0,
+      "score": 25,
+      "tga_billions": 912.1,
+      "tga_5d_flow": -24.1,
       "swaps_billions": 0.15,
-      "fallback": true,
-      "tga_fallback": true,
+      "fallback": false,
+      "tga_fallback": false,
       "swaps_fallback": false
     },
     "credit_stress": {
@@ -157,8 +154,8 @@
     "crypto_247": {
       "score": 4,
       "btc_funding_apr": 11.0,
-      "btc_oi_mil": 2816.0,
-      "dvol_index": 39.7,
+      "btc_oi_mil": 2821.6,
+      "dvol_index": 40.1,
       "fallback": false,
       "hl_fallback": false,
       "dvol_fallback": false
@@ -170,12 +167,12 @@
       "fallback": false
     },
     "liquidity_plumbing": {
-      "score": 10,
-      "tga_billions": 850.0,
-      "tga_5d_flow": 0.0,
+      "score": 25,
+      "tga_billions": 912.1,
+      "tga_5d_flow": -24.1,
       "swaps_billions": 0.15,
-      "fallback": true,
-      "tga_fallback": true,
+      "fallback": false,
+      "tga_fallback": false,
       "swaps_fallback": false
     },
     "credit_statutory": {
