@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "version": "3.6.5",
-  "timestamp": "2026-11-12 14:30 UTC",
-  "generated_at": "2026-11-12T14:30:42Z",
-  "valid_until": "2026-11-12T17:00:42Z",
+  "timestamp": "2026-11-12 15:00 UTC",
+  "generated_at": "2026-11-12T15:00:52Z",
+  "valid_until": "2026-11-12T17:30:52Z",
   "run_status": "COMPLETE",
-  "run_duration_seconds": 4.91,
+  "run_duration_seconds": 5.31,
   "symbol": "☀️",
-  "composite_score": 23,
-  "composite_raw": 23.2,
-  "display_score": 23,
+  "composite_score": 21,
+  "composite_raw": 21.0,
+  "display_score": 21,
   "status": "CLEAR SKIES",
   "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
   "color": "#00ff66",
@@ -86,7 +86,7 @@
     "crypto_perps": {
       "status": "NOMINAL",
       "color": "#00ff66",
-      "action": "Moderate derivatives bias (-7.0% APR)."
+      "action": "Moderate derivatives bias (+7.2% APR)."
     },
     "dark_pool": {
       "status": "ELEVATED",
@@ -101,16 +101,16 @@
   },
   "pillars": {
     "market_volatility": {
-      "score": 29,
-      "vix": 18.86,
-      "move_index": 93.78,
+      "score": 28,
+      "vix": 18.31,
+      "move_index": 93.91,
       "fallback": false
     },
     "crypto_leverage": {
-      "score": 17,
-      "btc_funding_apr": -7.0,
-      "btc_oi_mil": 2837.8,
-      "dvol_index": 40.1,
+      "score": 7,
+      "btc_funding_apr": 7.2,
+      "btc_oi_mil": 2792.6,
+      "dvol_index": 40.6,
       "fallback": false,
       "hl_fallback": false,
       "dvol_fallback": false
@@ -139,23 +139,23 @@
       "score": 3,
       "wiki_z": 0.27,
       "wiki_articles_ok": 4,
-      "border_wait_m": 0,
+      "border_wait_m": 15,
       "border_state": "OBSERVED",
       "fallback": false,
       "wiki_fallback": false,
       "cbp_fallback": false
     },
     "market_implied": {
-      "score": 29,
-      "vix": 18.86,
-      "move_index": 93.78,
+      "score": 28,
+      "vix": 18.31,
+      "move_index": 93.91,
       "fallback": false
     },
     "crypto_247": {
-      "score": 17,
-      "btc_funding_apr": -7.0,
-      "btc_oi_mil": 2837.8,
-      "dvol_index": 40.1,
+      "score": 7,
+      "btc_funding_apr": 7.2,
+      "btc_oi_mil": 2792.6,
+      "dvol_index": 40.6,
       "fallback": false,
       "hl_fallback": false,
       "dvol_fallback": false
@@ -184,7 +184,7 @@
       "score": 3,
       "wiki_z": 0.27,
       "wiki_articles_ok": 4,
-      "border_wait_m": 0,
+      "border_wait_m": 15,
       "border_state": "OBSERVED",
       "fallback": false,
       "wiki_fallback": false,
