@@ -2,7 +2,21 @@
 # -*- coding: utf-8 -*-
 """
 OPEN MARKET WEATHER OBSERVATORY // HYBRID MACRO & CRYPTO
-Version: 3.6.4 (stdlib only)
+Version: 3.6.5 (stdlib only)
+
+Changes in 3.6.5:
+  - Safety fix: the status can no longer step DOWN on fallback data. In 3.6.4 an
+    outage of the Yahoo or Hyperliquid feed fed neutral default values into the
+    thresholds, so two bad runs could release PAUSED. While the VIX or crypto feed
+    is on fallback, the market state can get worse but not better.
+  - The market state (what the scores say) and the data quality (whether every feed
+    delivered) are tracked separately. A data hiccup only shows ACTIVE as CAUTION; it
+    no longer counts as a market CAUTION that has to be left through the stricter
+    return band. After the feeds are healthy again, ACTIVE returns after the same
+    number of clean runs as for any other step down (OMW_RECOVERY_CONFIRMATIONS).
+  - transition has two new fields: market_status and clean_runs. status_changed now
+    refers to the published grid status. State written by older versions is read
+    without trouble.
 
 Changes in 3.6.4:
   - Wikipedia: a missing day is no longer always read as zero views. Whether an
@@ -84,7 +98,7 @@ def env_number(name, default, cast=float, minimum=None):
     return value
 
 
-VERSION = "3.6.4"
+VERSION = "3.6.5"
 SCHEMA_VERSION = 1
 BASE_URL = os.environ.get(
     "OMW_BASE_URL", "https://open-market-weather.hartmut-nese.workers.dev"
@@ -852,13 +866,24 @@ def generate_tactical_posture(composite, p, quality, prev):
     svr = p["short_volume"]["spy_short_volume_ratio"]
     swaps = p["dollar_liquidity"]["swaps_billions"]
     clean = quality["status"] == "HIGH" and not quality["degraded_feeds"]
+    # The VIX and crypto feeds drive the thresholds. While one of them is on fallback
+    # its numbers are neutral defaults, so they must not be allowed to improve the status.
+    market_inputs_ok = not (p["market_volatility"]["fallback"] or p["crypto_leverage"]["fallback"])
+    required = RECOVERY_CONFIRMATIONS
     posture = {}
 
-    # 1. Grid bots
-    prev_status = previous_grid_status(prev)
+    # 1. Grid bots.
+    # Two things are tracked separately. The market state is what the scores say
+    # (with its bands and confirmation). Data quality only decides whether ACTIVE may
+    # be shown: a feed problem shows ACTIVE as CAUTION, but it is not a market CAUTION
+    # and does not move the market state onto the stricter return band.
+    prev_published = previous_grid_status(prev)
     prev_transition = dig(prev, "transition", default={})
+    prev_market = dig(prev_transition, "market_status")
+    if prev_market not in GRID_SEVERITY:
+        prev_market = prev_published            # state written by an older version
     # Without a recent state the assumed cold-start status also picks the band.
-    band_status = prev_status or COLD_START_STATUS
+    band_status = prev_market or COLD_START_STATUS
 
     calm_enter = composite < CALM_ENTER["composite"] and vix < CALM_ENTER["vix"] and crypto_score < CALM_ENTER["crypto"]
     calm_return = composite < CALM_RETURN["composite"] and vix < CALM_RETURN["vix"] and crypto_score < CALM_RETURN["crypto"]
@@ -868,17 +893,36 @@ def generate_tactical_posture(composite, p, quality, prev):
     hot_stay = crypto_score >= PAUSE_STAY or composite >= PAUSE_STAY
     band_held_pause = band_status == "PAUSED" and not hot_enter and hot_stay
 
-    candidate = raw_grid_candidate(composite, p, clean, band_status)
-    grid_status, transition = resolve_grid_status(candidate, prev_status, prev_transition)
-    streak_held = grid_status != candidate
-    held = band_held_calm or band_held_pause or streak_held
+    candidate = raw_grid_candidate(composite, p, True, band_status)
+    frozen = False
+    if not market_inputs_ok and GRID_SEVERITY[candidate] < GRID_SEVERITY[band_status]:
+        candidate, frozen = band_status, True   # no step down on fallback data
+    market_status, transition = resolve_grid_status(candidate, prev_market, prev_transition)
 
-    pending = f"{transition['confirmed_runs']}/{transition['required_runs']} confirmations"
+    prev_clean = to_float(dig(prev_transition, "clean_runs"))
+    if prev_clean is None:
+        # No counter yet: a fresh start or a state from an older version.
+        prev_clean = required if (prev is None or not dig(prev, "data_quality", "degraded_feeds")) else 0
+    clean_runs = int(min(required, prev_clean + 1)) if clean else 0
+    data_hold = market_status == "ACTIVE" and clean_runs < required
+    grid_status = "CAUTION" if data_hold else market_status
+
+    transition["market_status"] = market_status
+    transition["clean_runs"] = clean_runs
+    transition["status_changed"] = grid_status != (prev_published or COLD_START_STATUS)
+
+    streak_held = market_status != candidate
+    data_recovering = data_hold and clean
+    held = band_held_calm or band_held_pause or streak_held or data_recovering or frozen
+
+    pending = f"{transition['confirmed_runs']}/{required} confirmations"
     if transition["cold_start"]:
         pending += ", no recent previous state"
     caution_ref = "Reference: wider grid bands (+15-25%)"
 
-    if grid_status == "PAUSED" and streak_held:
+    if grid_status == "PAUSED" and frozen:
+        action = "Staying paused: market feeds on fallback data, no step down on fallback data."
+    elif grid_status == "PAUSED" and streak_held:
         action = f"Staying paused: recovery pending ({pending})."
     elif grid_status == "PAUSED" and band_status == "PAUSED" and not hot_enter:
         action = f"Staying paused until the overall and crypto scores fall below {PAUSE_STAY:g}."
@@ -887,6 +931,12 @@ def generate_tactical_posture(composite, p, quality, prev):
                   f"Reference: pause new grid bids.")
     elif grid_status == "ACTIVE":
         action = "Calm conditions. No change to your usual grid settings."
+    elif data_hold and not clean:
+        action = f"{caution_ref}. Upstream data quality is degraded."
+    elif data_hold:
+        action = f"{caution_ref}. Data quality recovering ({clean_runs}/{required} clean runs)."
+    elif frozen:
+        action = f"{caution_ref}. Market feeds on fallback data, no step down on fallback data."
     elif band_held_calm:
         reasons = return_band_blockers(composite, vix, crypto_score)
         if not clean:
