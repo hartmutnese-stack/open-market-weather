@@ -41,7 +41,7 @@ The daily FINRA file is around 15 MB, so the script streams it line by line inst
 - **Unofficial endpoints.** Yahoo, CBP and SEC search aren't stable APIs and can break without notice.
 - **Fallbacks.** If a feed fails, the script retries once and then uses a hard-coded default (like VIX 16.5). `weather.json` lists affected pillars under `fallback_flags`, and `feed_health` has the state of every single feed: `OK`, `FALLBACK`, `STALE` or, for the Laredo feed at night, `CLOSED`. Where there is an error, it says which kind (`TIMEOUT`, `HTTP_429` and so on). The dashboard shows tags like `[fallback: tga, ny fed]`. In `history.csv` those values are left empty.
 - **Stale data.** A feed counts as stale when its newest data point is too old: Yahoo quotes after 5 days, FINRA files after 4, Treasury records after 6. That leaves room for weekends and holiday weekends. The dashboard shows `[stale: yahoo]` for these.
-- **Data quality.** `data_quality` turns fallback and stale feeds into a score from 0 to 100 (HIGH from 90, MEDIUM from 70). `fallback_count` and `stale_count` tell the two apart. `run_status` is `DEGRADED` when any feed is on fallback or stale. While that is the case, the grid bot status never reaches ACTIVE. The Laredo feed being `CLOSED` at night doesn't count.
+- **Data quality.** `data_quality` turns fallback and stale feeds into a score from 0 to 100 (HIGH from 90, MEDIUM from 70). `fallback_count` and `stale_count` tell the two apart. `run_status` is `DEGRADED` when any feed is on fallback or stale. While that is the case, ACTIVE is shown as CAUTION (how it comes back is described under "Using it in a bot"). The Laredo feed being `CLOSED` at night doesn't count.
 
 ## Run it
 
@@ -60,7 +60,7 @@ Optional environment variables:
 - `OMW_REPO_URL`: the link to the GitHub repo shown on the dashboard and in the text file. Set this if you fork it.
 - `OMW_VALID_FOR_HOURS`: how long a run counts as valid. Default 2.5.
 - `OMW_STATE_MAX_AGE_HOURS`: a previous state older than this is ignored. Default 4.
-- `OMW_RECOVERY_CONFIRMATIONS`: how many runs in a row it takes to step the grid status down. Default 2, set it to 1 to turn the delay off.
+- `OMW_RECOVERY_CONFIRMATIONS`: how many runs in a row it takes to step the grid status down, and how many clean runs it takes before ACTIVE comes back after a feed problem. Default 2, set it to 1 to turn both delays off.
 - `OMW_COLD_START_STATUS`: the grid status to assume when there is no recent previous state. It also decides which thresholds apply (see below). Default `CAUTION`.
 
 ## Using it in a bot
@@ -71,20 +71,24 @@ Optional environment variables:
 - **ACTIVE** if the overall score is below 35, VIX is below 20, the crypto score is below 40, and every feed is healthy (data quality HIGH, nothing on fallback or stale).
 - **CAUTION** for anything in between.
 
-To keep the status from flipping back and forth around a threshold, there are two rules.
+Two things decide the grid status, and the script tracks them separately: the market state (what the scores say) and the data quality (whether every feed delivered).
 
-First, leaving CAUTION or PAUSED takes clearer readings than entering. Going back to ACTIVE needs an overall score below 28, VIX below 18.5 and a crypto score below 35. PAUSED holds until both the overall and the crypto score are below 58.
+The market state has two rules against flip-flopping. First, leaving CAUTION or PAUSED takes clearer readings than entering. Going back to ACTIVE needs an overall score below 28, VIX below 18.5 and a crypto score below 35. PAUSED holds until both the overall and the crypto score are below 58. Second, stepping down takes two runs in a row. Going to a more cautious status happens right away. If the runs in a row disagree, say CAUTION and then ACTIVE, the status steps down only to the more cautious one.
 
-Second, stepping down takes two runs in a row. Going to a more cautious status happens right away. If the runs in a row disagree, say CAUTION and then ACTIVE, the status steps down only to the more cautious one. `transition` in the JSON shows the current count. `hysteresis` is `true` while either rule keeps the status where it is, and the `action` text says which one.
+The market state never steps down on fallback data from the VIX or the crypto feed. Those numbers are neutral defaults, so an outage can't release a PAUSED status.
 
-The script gets the previous status from the local `weather.json` or from the live site, and ignores it if it is older than four hours. Without a usable previous state it assumes CAUTION (`OMW_COLD_START_STATUS`) and uses the stricter thresholds that go with it, so the first run after a restart is cautious even in calm markets.
+Data quality only affects ACTIVE. While any feed is on fallback or stale, ACTIVE is shown as CAUTION. Once everything is healthy again, ACTIVE comes back after the same number of clean runs (two by default). A data hiccup doesn't count as a market CAUTION, so it doesn't put you on the stricter return band.
+
+`transition` has the details: `market_state`, the confirmation count and `clean_runs`. `hysteresis` is `true` while any of these rules holds the status back, and `action` says which.
+
+The script gets the previous status from the local `weather.json` or from the live site, and ignores it if it is older than four hours. Without a usable previous state it assumes `CAUTION` (`OMW_COLD_START_STATUS`) and uses the stricter thresholds that go with it. So the first run after a restart is cautious even in calm markets, and ACTIVE can follow one run later if the readings hold.
 
 A calm overall score can still land on CAUTION. In this trimmed example the score is 24, but the last status was CAUTION and VIX (18.69) hasn't dropped below the 18.5 needed to leave it:
 
 ```json
 {
   "schema_version": 1,
-  "version": "3.6.4",
+  "version": "3.6.5",
   "generated_at": "2026-11-11T10:37:26Z",
   "valid_until": "2026-11-11T13:07:26Z",
   "run_status": "COMPLETE",
@@ -96,6 +100,10 @@ A calm overall score can still land on CAUTION. In this trimmed example the scor
     "status": "HIGH",
     "score": 100,
     "degraded_feeds": []
+  },
+  "transition": {
+    "market_status": "CAUTION",
+    "clean_runs": 2
   },
   "tactical_posture": {
     "grid_bots": {
