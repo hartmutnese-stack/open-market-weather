@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "version": "3.6.3",
-  "timestamp": "2026-11-12 05:30 UTC",
-  "generated_at": "2026-11-12T05:30:33Z",
-  "valid_until": "2026-11-12T08:00:33Z",
+  "version": "3.6.4",
+  "timestamp": "2026-11-12 05:45 UTC",
+  "generated_at": "2026-11-12T05:45:11Z",
+  "valid_until": "2026-11-12T08:15:11Z",
   "run_status": "COMPLETE",
-  "run_duration_seconds": 2.91,
+  "run_duration_seconds": 3.3,
   "symbol": "☀️",
-  "composite_score": 21,
-  "composite_raw": 21.0,
-  "display_score": 21,
+  "composite_score": 20,
+  "composite_raw": 20.8,
+  "display_score": 20,
   "status": "CLEAR SKIES",
   "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
   "color": "#00ff66",
@@ -72,7 +72,7 @@
     "grid_bots": {
       "status": "ACTIVE",
       "color": "#00ff66",
-      "action": "Calm conditions. Standard grid parameters.",
+      "action": "Calm conditions. No change to your usual grid settings.",
       "hysteresis": false,
       "confirmed_runs": 0
     },
@@ -84,7 +84,7 @@
     "crypto_perps": {
       "status": "NOMINAL",
       "color": "#00ff66",
-      "action": "Moderate derivatives bias (+3.1% APR)."
+      "action": "Moderate derivatives bias (+3.8% APR)."
     },
     "dark_pool": {
       "status": "ELEVATED",
@@ -105,10 +105,10 @@
       "fallback": false
     },
     "crypto_leverage": {
-      "score": 10,
-      "btc_funding_apr": 3.1,
-      "btc_oi_mil": 2944.4,
-      "dvol_index": 38.9,
+      "score": 9,
+      "btc_funding_apr": 3.8,
+      "btc_oi_mil": 2944.2,
+      "dvol_index": 39.1,
       "fallback": false,
       "hl_fallback": false,
       "dvol_fallback": false
@@ -150,10 +150,10 @@
       "fallback": false
     },
     "crypto_247": {
-      "score": 10,
-      "btc_funding_apr": 3.1,
-      "btc_oi_mil": 2944.4,
-      "dvol_index": 38.9,
+      "score": 9,
+      "btc_funding_apr": 3.8,
+      "btc_oi_mil": 2944.2,
+      "dvol_index": 39.1,
       "fallback": false,
       "hl_fallback": false,
       "dvol_fallback": false
