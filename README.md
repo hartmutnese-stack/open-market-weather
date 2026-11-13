@@ -79,7 +79,7 @@ The market state never steps down on fallback data from the VIX or the crypto fe
 
 Data quality only affects ACTIVE. While any feed is on fallback or stale, ACTIVE is shown as CAUTION. Once everything is healthy again, ACTIVE comes back after the same number of clean runs (two by default). A data hiccup doesn't count as a market CAUTION, so it doesn't put you on the stricter return band.
 
-`transition` has the details: `market_state`, the confirmation count and `clean_runs`. `hysteresis` is `true` while any of these rules holds the status back, and `action` says which.
+`transition` has the details: `market_status`, the confirmation count and `clean_runs`. `hysteresis` is `true` while any of these rules holds the status back, and `action` says which.
 
 The script gets the previous status from the local `weather.json` or from the live site, and ignores it if it is older than four hours. Without a usable previous state it assumes `CAUTION` (`OMW_COLD_START_STATUS`) and uses the stricter thresholds that go with it. So the first run after a restart is cautious even in calm markets, and ACTIVE can follow one run later if the readings hold.
 
