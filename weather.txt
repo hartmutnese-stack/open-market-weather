@@ -1,7 +1,7 @@
 
 ======================================================================
  OPEN MARKET WEATHER OBSERVATORY // HYBRID MACRO & CRYPTO // v3.6.5
- 2026-11-13 17:31 UTC // COMPLETE // VALID UNTIL 2026-11-13T20:01:27Z
+ 2026-11-13 18:00 UTC // COMPLETE // VALID UNTIL 2026-11-13T20:30:49Z
 ======================================================================
 
  SCOPE: Experimental rule-based macro regime observer.
@@ -12,19 +12,19 @@
  CURRENT REGIME : Systemic friction minimal. Normal market conditions across macro and crypto feeds.
 
  --- OPERATIONAL POSTURE (RULE-BASED REFERENCE HEURISTICS) ---
- [*] GRID BOTS    : CAUTION -> Reference: wider grid bands (+15-25%), smaller sizes or leverage.
+ [*] GRID BOTS    : CAUTION -> Reference: wider grid bands (+15-25%). Return band active (VIX 19.69 >= 18.5).
  [*] DIP BUYING   : FAVORABLE -> Orderly pullbacks. Liquidity supports absorption.
  [*] CRYPTO PERPS : NOMINAL -> Neutral baseline funding (+11.0% APR).
  [*] SHORT VOLUME : ELEVATED -> Elevated short volume share on SPY (52.5%).
  [*] COLLATERAL   : STABLE -> No meaningful central bank swap operations.
 
  --- 6 PILLARS ---
- [1] Market Volatility : Score 35/100 (VIX: 20.04 | MOVE: 99.44)
- [2] Crypto Leverage   : Score 4/100 (Funding: +11.0% APR | DVOL: 40.2%)
+ [1] Market Volatility : Score 34/100 (VIX: 19.69 | MOVE: 99.31)
+ [2] Crypto Leverage   : Score 4/100 (Funding: +11.0% APR | DVOL: 40.0%)
  [3] Short Volume      : Score 30/100 (Short ratio: 52.5% (20261112))
  [4] Dollar Liquidity  : Score 25/100 (TGA: $912.1B | Swaps: $0.0B)
  [5] Credit Stress     : Score 36/100 (Filings: 15)
- [6] Odds and Ends     : Score 4/100 (Wiki Z: +0.29σ | Border: 10m)
+ [6] Odds and Ends     : Score 5/100 (Wiki Z: +0.29σ | Border: 20m)
 
  API: curl -sL https://open-market-weather.hartmut-nese.workers.dev/weather.json
  REPO: https://github.com/hartmutnese-stack/open-market-weather
