@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "version": "3.6.5",
-  "timestamp": "2026-11-13 05:31 UTC",
-  "generated_at": "2026-11-13T05:31:23Z",
-  "valid_until": "2026-11-13T08:01:23Z",
+  "timestamp": "2026-11-13 06:00 UTC",
+  "generated_at": "2026-11-13T06:00:47Z",
+  "valid_until": "2026-11-13T08:30:47Z",
   "run_status": "COMPLETE",
-  "run_duration_seconds": 6.39,
-  "symbol": "☀️",
-  "composite_score": 23,
-  "composite_raw": 23.2,
-  "display_score": 23,
-  "status": "CLEAR SKIES",
-  "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
-  "color": "#00ff66",
+  "run_duration_seconds": 4.77,
+  "symbol": "⛅",
+  "composite_score": 31,
+  "composite_raw": 31.0,
+  "display_score": 31,
+  "status": "SCATTERED CLOUDS",
+  "desc": "Operational noise within standard ranges. No immediate systemic fracture.",
+  "color": "#ffcc00",
   "data_quality": {
     "status": "HIGH",
     "score": 100,
@@ -60,21 +60,21 @@
   },
   "transition": {
     "previous_status": "ACTIVE",
-    "candidate_status": "ACTIVE",
+    "candidate_status": "CAUTION",
     "required_runs": 2,
     "cold_start": false,
     "confirmed_runs": 0,
     "recovering": false,
     "recovery_target": null,
-    "status_changed": false,
-    "market_status": "ACTIVE",
+    "status_changed": true,
+    "market_status": "CAUTION",
     "clean_runs": 2
   },
   "tactical_posture": {
     "grid_bots": {
-      "status": "ACTIVE",
-      "color": "#00ff66",
-      "action": "Calm conditions. No change to your usual grid settings.",
+      "status": "CAUTION",
+      "color": "#ffcc00",
+      "action": "Reference: wider grid bands (+15-25%), smaller sizes or leverage.",
       "hysteresis": false,
       "confirmed_runs": 0
     },
@@ -84,9 +84,9 @@
       "action": "Orderly pullbacks. Liquidity supports absorption."
     },
     "crypto_perps": {
-      "status": "NOMINAL",
-      "color": "#00ff66",
-      "action": "Neutral baseline funding (+9.4% APR)."
+      "status": "HEAVY SHORT",
+      "color": "#ff6600",
+      "action": "Negative perp funding (-19.8% APR). Potential short squeeze."
     },
     "dark_pool": {
       "status": "ELEVATED",
@@ -107,10 +107,10 @@
       "fallback": false
     },
     "crypto_leverage": {
-      "score": 5,
-      "btc_funding_apr": 9.4,
-      "btc_oi_mil": 2646.4,
-      "dvol_index": 40.6,
+      "score": 44,
+      "btc_funding_apr": -19.8,
+      "btc_oi_mil": 2575.5,
+      "dvol_index": 40.0,
       "fallback": false,
       "hl_fallback": false,
       "dvol_fallback": false
@@ -152,10 +152,10 @@
       "fallback": false
     },
     "crypto_247": {
-      "score": 5,
-      "btc_funding_apr": 9.4,
-      "btc_oi_mil": 2646.4,
-      "dvol_index": 40.6,
+      "score": 44,
+      "btc_funding_apr": -19.8,
+      "btc_oi_mil": 2575.5,
+      "dvol_index": 40.0,
       "fallback": false,
       "hl_fallback": false,
       "dvol_fallback": false
