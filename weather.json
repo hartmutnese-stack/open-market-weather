@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "version": "3.6.5",
-  "timestamp": "2026-11-13 06:00 UTC",
-  "generated_at": "2026-11-13T06:00:47Z",
-  "valid_until": "2026-11-13T08:30:47Z",
+  "timestamp": "2026-11-13 06:30 UTC",
+  "generated_at": "2026-11-13T06:30:45Z",
+  "valid_until": "2026-11-13T09:00:45Z",
   "run_status": "COMPLETE",
-  "run_duration_seconds": 4.77,
-  "symbol": "⛅",
-  "composite_score": 31,
-  "composite_raw": 31.0,
-  "display_score": 31,
-  "status": "SCATTERED CLOUDS",
-  "desc": "Operational noise within standard ranges. No immediate systemic fracture.",
-  "color": "#ffcc00",
+  "run_duration_seconds": 2.58,
+  "symbol": "☀️",
+  "composite_score": 23,
+  "composite_raw": 23.5,
+  "display_score": 23,
+  "status": "CLEAR SKIES",
+  "desc": "Systemic friction minimal. Normal market conditions across macro and crypto feeds.",
+  "color": "#00ff66",
   "data_quality": {
     "status": "HIGH",
     "score": 100,
@@ -55,18 +55,19 @@
       "detail": "4/6 articles usable"
     },
     "cbp": {
-      "status": "OK"
+      "status": "CLOSED",
+      "detail": "Laredo feed reachable; no delay value"
     }
   },
   "transition": {
-    "previous_status": "ACTIVE",
+    "previous_status": "CAUTION",
     "candidate_status": "CAUTION",
     "required_runs": 2,
     "cold_start": false,
     "confirmed_runs": 0,
     "recovering": false,
     "recovery_target": null,
-    "status_changed": true,
+    "status_changed": false,
     "market_status": "CAUTION",
     "clean_runs": 2
   },
@@ -74,8 +75,8 @@
     "grid_bots": {
       "status": "CAUTION",
       "color": "#ffcc00",
-      "action": "Reference: wider grid bands (+15-25%), smaller sizes or leverage.",
-      "hysteresis": false,
+      "action": "Reference: wider grid bands (+15-25%). Return band active (VIX 18.70 >= 18.5).",
+      "hysteresis": true,
       "confirmed_runs": 0
     },
     "dip_buying": {
@@ -84,9 +85,9 @@
       "action": "Orderly pullbacks. Liquidity supports absorption."
     },
     "crypto_perps": {
-      "status": "HEAVY SHORT",
-      "color": "#ff6600",
-      "action": "Negative perp funding (-19.8% APR). Potential short squeeze."
+      "status": "NOMINAL",
+      "color": "#00ff66",
+      "action": "Moderate derivatives bias (+4.6% APR)."
     },
     "dark_pool": {
       "status": "ELEVATED",
@@ -107,10 +108,10 @@
       "fallback": false
     },
     "crypto_leverage": {
-      "score": 44,
-      "btc_funding_apr": -19.8,
-      "btc_oi_mil": 2575.5,
-      "dvol_index": 40.0,
+      "score": 9,
+      "btc_funding_apr": 4.6,
+      "btc_oi_mil": 2564.0,
+      "dvol_index": 39.5,
       "fallback": false,
       "hl_fallback": false,
       "dvol_fallback": false
@@ -136,11 +137,11 @@
       "fallback": false
     },
     "odds_and_ends": {
-      "score": 9,
+      "score": 4,
       "wiki_z": 0.29,
       "wiki_articles_ok": 4,
-      "border_wait_m": 30,
-      "border_state": "OBSERVED",
+      "border_wait_m": null,
+      "border_state": "CLOSED",
       "fallback": false,
       "wiki_fallback": false,
       "cbp_fallback": false
@@ -152,10 +153,10 @@
       "fallback": false
     },
     "crypto_247": {
-      "score": 44,
-      "btc_funding_apr": -19.8,
-      "btc_oi_mil": 2575.5,
-      "dvol_index": 40.0,
+      "score": 9,
+      "btc_funding_apr": 4.6,
+      "btc_oi_mil": 2564.0,
+      "dvol_index": 39.5,
       "fallback": false,
       "hl_fallback": false,
       "dvol_fallback": false
@@ -181,11 +182,11 @@
       "fallback": false
     },
     "cognitive_physical": {
-      "score": 9,
+      "score": 4,
       "wiki_z": 0.29,
       "wiki_articles_ok": 4,
-      "border_wait_m": 30,
-      "border_state": "OBSERVED",
+      "border_wait_m": null,
+      "border_state": "CLOSED",
       "fallback": false,
       "wiki_fallback": false,
       "cbp_fallback": false
